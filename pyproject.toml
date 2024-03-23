@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "communex_validators"
+version = "0.1.0"
+description = "CommuneX Validators"
+authors = ["supreme <zimulajan0@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+packages = [{ include = "communex_validators", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+communex = "^0.1.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
