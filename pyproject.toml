@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "communex_validators"
+name = "synthia"
 version = "0.1.0"
 description = "CommuneX Validators"
 authors = ["supreme <zimulajan0@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 
-packages = [{ include = "communex_validators", from = "src" }]
+packages = [{ include = "synthia", from = "src" }]
 
 [tool.poetry.dependencies]
 python = "^3.11"

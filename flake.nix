@@ -34,12 +34,12 @@
 	  ];
 	};
         packages = rec {
-          communex_validators = p2n.mkPoetryApplication {
+          synthia = p2n.mkPoetryApplication {
             projectDir = ./.;
             python = pkgs.python311;
             overrides = p2n-overrides;
           };
-          default = communex_validators;
+          default = synthia;
         };
       });
 }
