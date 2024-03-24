@@ -9,11 +9,10 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-
-communex = { git = "https://github.com/agicommies/communex.git", develop = true }
+communex = { git = "https://github.com/agicommies/communex.git", develop = true, branch = "master" }
 python-dotenv = "^1.0.1"
 pydantic-settings = "^2.2.1"
-openai = "^1.14.2"
+anthropic = "^0.21.3"
 
 
 [build-system]

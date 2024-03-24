@@ -1,18 +1,18 @@
 from fastapi import HTTPException
-from openai import OpenAI
+from anthropic import Anthropic
 from communex.module.module import Module, endpoint  # type: ignore
-from ._config import OpenAISettings  # Import the OpenAISettings class from config.py
+from ._config import AnthropicSettings
 
 
-class OpenAIModule(Module):
-    def __init__(self, settings: OpenAISettings | None = None) -> None:
+class AnthropicModule(Module):
+    def __init__(self, settings: AnthropicSettings | None = None) -> None:
         super().__init__()
-        self.settings = settings or OpenAISettings()  # type: ignore
-        self.client = OpenAI(api_key=self.settings.api_key)
+        self.settings = settings or AnthropicSettings()  # type: ignore
+        self.client = Anthropic(api_key=self.settings.api_key)
 
     @endpoint
     def generate(self, prompt: str) -> dict[str, str]:
-        response = self.client.chat.completions.create(
+        response = self.client.chat.completions.create(  # type: ignore
             model=self.settings.model,
             response_format={"type": "json_object"},
             messages=[
@@ -26,12 +26,12 @@ class OpenAIModule(Module):
             temperature=self.settings.temperature,
         )
 
-        for msg in response.choices:
-            finish_reason = msg.finish_reason
+        for msg in response.choices:  # type: ignore
+            finish_reason = msg.finish_reason  # type: ignore
             if finish_reason != "stop":
                 raise HTTPException(418, finish_reason)
 
-            content = msg.message.content
+            content = msg.message.content  # type: ignore
             if content:
                 return {"answer": content}
 
