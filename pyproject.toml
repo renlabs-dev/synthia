@@ -6,13 +6,19 @@ authors = ["supreme <zimulajan0@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 
-packages = [{ include = "synthia", from = "src" }]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-communex = "^0.1.5"
+communex = { git = "https://github.com/agicommies/communex.git", develop = true }
+python-dotenv = "^1.0.1"
+wandb = "^0.16.4"
+pydentic = "^0.0.1.dev3"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pyright]
+strict = ["src"]
+# reportUnusedVariable = "warning"

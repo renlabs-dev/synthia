@@ -1,5 +1,5 @@
 {
-  description = "Communex Validators SDK";
+  description = "Synthetic data generation subnet";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs?ref=23.11";
