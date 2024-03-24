@@ -14,7 +14,7 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
-          system=system;
+          system = system;
           config.allowUnfree = true;
         };
         p2n = poetry2nix.lib.mkPoetry2Nix {
@@ -26,13 +26,12 @@
       in
       {
         devShells.default = pkgs.mkShell {
-	  buildInputs = [
-	    pkgs.python310
-	    pkgs.python310Packages.ipython
-	    pkgs.ruff
-	    pkgs.poetry
-	  ];
-	};
+          buildInputs = [
+            pkgs.python310
+            pkgs.poetry
+            pkgs.ruff
+          ];
+        };
         packages = rec {
           synthia = p2n.mkPoetryApplication {
             projectDir = ./.;
