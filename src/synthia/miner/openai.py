@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from openai import OpenAI
 from communex.module.module import Module, endpoint  # type: ignore
-from ._config import OpenAISettings  # Import the OpenAISettings class from config.py
+from ._config import OpenAISettings  # Import the OpenAISettings class from config
 
 
 class OpenAIModule(Module):

@@ -1,10 +1,16 @@
 from fastapi import HTTPException
-from anthropic import Anthropic
+
+from anthropic import Anthropic, APIError
+
 from communex.module.module import Module, endpoint  # type: ignore
-from ._config import AnthropicSettings
+
+from ._config import (
+    AnthropicSettings,
+)  # Import the AnthropicSettings class from config 
 
 
 class AnthropicModule(Module):
+
     def __init__(self, settings: AnthropicSettings | None = None) -> None:
         super().__init__()
         self.settings = settings or AnthropicSettings()  # type: ignore
@@ -12,27 +18,22 @@ class AnthropicModule(Module):
 
     @endpoint
     def generate(self, prompt: str) -> dict[str, str]:
-        response = self.client.chat.completions.create(  # type: ignore
-            model=self.settings.model,
-            response_format={"type": "json_object"},
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a helpful assistant designed to output JSON.",
-                },
-                {"role": "user", "content": prompt},
-            ],
-            max_tokens=self.settings.max_tokens,
-            temperature=self.settings.temperature,
-        )
+        try:
+            response = self.client.completions.create(
+                model=self.settings.model,
+                prompt=f"\nHuman: {prompt}\nAssistant:",
+                max_tokens_to_sample=self.settings.max_tokens,
+                temperature=self.settings.temperature,
+                stop_sequences=["\nHuman:"],
+            )
 
-        for msg in response.choices:  # type: ignore
-            finish_reason = msg.finish_reason  # type: ignore
-            if finish_reason != "stop":
-                raise HTTPException(418, finish_reason)
+            completion = response.completion
 
-            content = msg.message.content  # type: ignore
-            if content:
-                return {"answer": content}
+            if completion.endswith("\nHuman:"):
+                content = completion[:-7].strip()
+            else:
+                content = completion.strip()
 
-        return {"answer": ""}
+            return {"answer": content}
+        except APIError as e:
+            raise HTTPException(status_code=e.status_code, detail=str(e)) from e  # type: ignore

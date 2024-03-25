@@ -1,6 +1,5 @@
 from pydantic_settings import BaseSettings
 
-
 class OpenAISettings(BaseSettings):
     api_key: str
     model: str = "gpt-3.5-turbo"
@@ -9,8 +8,7 @@ class OpenAISettings(BaseSettings):
 
     class Config:
         env_prefix = "OPENAI_"
-        env_file = "env/config.env"
-
+        env_file = "env/openai.env"
 
 class AnthropicSettings(BaseSettings):
     api_key: str
@@ -20,5 +18,4 @@ class AnthropicSettings(BaseSettings):
 
     class Config:
         env_prefix = "ANTHROPIC_"
-        env_file = "env/config.env"
-
+        env_file = "env/anthropic.env"
