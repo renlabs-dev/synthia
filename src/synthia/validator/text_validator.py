@@ -22,11 +22,12 @@ SYNTHIA_NETUID = 1
 # - implement retry mechanism on question answer generation
 # - make sure miner instructions are the same as answer generation of validator. WIth the same system instructions and tempreature
 # - implement the main validation loop -> get question, get answer, loop through miners, ...  (without validation that is done by kelvin)
+# after scoring set weights
 # - query the `SYNTHIA_NETUID` dynamically from the chain name of the subnet
 
 # Honza
-# figure out saving to db
 # figure out a better prompt
+# save the interaction between a validator and miner to a db
 # making more robust, think about it
 
 # Kelvin
