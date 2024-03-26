@@ -19,7 +19,7 @@ from communex.compat.types import Ss58Address  # type: ignore
 import wandb
 
 from ._config import ValidatorSettings
-from .generate_data import InputGenerator, create_prompt
+from .generate_data import InputGenerator, question_prompt
 
 
 def score(val_answer: str, miner_answer: str):
@@ -86,7 +86,7 @@ class TextValidator(Module):
         modules_filtered_address = get_ip_port(modules_adresses)
         ig = InputGenerator()
         q = 3
-        prompt = create_prompt(t = 3, q = q)
+        prompt = question_prompt(t = 3, q = q)
         questions = ig.prompt_question_gpt(prompt, q)['Answer'][0]['questions']
         questions = '\n'.join(questions)
         validator_answer = ig.prompt_answer_gpt(questions)['Answer'][0]
