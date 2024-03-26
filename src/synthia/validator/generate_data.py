@@ -343,16 +343,16 @@ def get_styles():
     return styles
 
 
-def create_prompt(k: int, q: int):
+def create_prompt(t: int, q: int):
     themes = get_themes()
     styles = get_styles()
-    theme = random.choices(themes, k=k)
+    theme = random.choices(themes, k=t)
     style = random.choice(styles)
     prompt = f"Write {q} questions about any of the following themes: {theme} in a {style} style."
     return prompt
 
 
-class InputGeneration:
+class InputGenerator:
     def __init__(self) -> None:
         self.validator_settings = ValidatorSettings()  # type: ignore
         key = self.validator_settings.api_key
@@ -393,7 +393,7 @@ class InputGeneration:
         answers = self._treat_response(response)
         return {"Answer": answers}
 
-    def prompt_answer_gpt(self, questions: list[str], model: str = "gpt-3.5-turbo"):
+    def prompt_answer_gpt(self, questions: str, model: str = "gpt-3.5-turbo"):
         response = self.client.chat.completions.create(
             model=model,
             temperature=self.validator_settings.answer_temperature,
@@ -403,7 +403,7 @@ class InputGeneration:
                     "role": "system",
                     "content": "You are a helpful assistant designed to output JSON.",
                 },
-                {"role": "user", "content": "Answer those questions, one line for each" +  "\n".join(questions)},
+                {"role": "user", "content": "Answer those questions, one line for each\n" + questions},
             ],
         )
         answers = self._treat_response(response)
@@ -411,7 +411,7 @@ class InputGeneration:
 
 
 if __name__ == "__main__":
-    ig = InputGeneration()
+    ig = InputGenerator()
     q = 2
     prompt = create_prompt(k=3, q=q)
     questions = ig.prompt_question_gpt(prompt, q)["Answer"][0]['questions']
