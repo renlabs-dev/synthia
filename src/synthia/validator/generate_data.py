@@ -1,5 +1,6 @@
 import json
 import random
+from typing import cast, Any
 
 from openai import OpenAI
 from openai.types.chat.chat_completion import ChatCompletion
@@ -343,12 +344,17 @@ def get_styles():
     return styles
 
 
-def create_prompt(t: int, q: int):
+def question_prompt(t: int, q: int) -> str:
     themes = get_themes()
     styles = get_styles()
     theme = random.choices(themes, k=t)
     style = random.choice(styles)
     prompt = f"Instructions: Write `{q}` questions, theme them in any of these categories: {theme} in a {style} style."
+    return prompt
+
+
+def answer_prompt(questions: list[str]) -> str:
+    prompt = f"Instructions: Write the answers to the following questions:\n{questions}"
     return prompt
 
 
@@ -373,7 +379,7 @@ class InputGenerator:
 
     def prompt_question_gpt(
         self, text: str, question_amount: int, model: str = "gpt-3.5-turbo"
-    ):
+    ) -> dict[str, Any]:
         assistant_prompt = (
             "You output only valid JSON, in the following structure:\n"
             f'[{{"questions": ["question1", "question2", ..., "question{question_amount}"]}}]'
@@ -406,7 +412,20 @@ class InputGenerator:
         answers = self._treat_response(response)
         return {"Answer": answers}
 
-    def prompt_answer_gpt(self, questions: str, model: str = "gpt-3.5-turbo"):
+    def prompt_answer_gpt(
+        self, question_amount: int, text: str, model: str = "gpt-3.5-turbo"
+    ) -> dict[str, Any]:
+
+        assistant_prompt = (
+            "You output only valid JSON, in the following structure:\n"
+            f'[{{"answers": ["answer1", "answer2", ..., "answer{question_amount}"]}}]'
+        )
+
+        system_prompt = (
+            f"You are an expert answer generator. Your task is to create {question_amount} high-quality, relevant answers based on the given questions. "
+            "Follow the guidelines and examples provided to generate answers in the specified JSON format."
+        )
+
         response = self.client.chat.completions.create(
             model=model,
             temperature=self.validator_settings.answer_temperature,
@@ -414,12 +433,15 @@ class InputGenerator:
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a helpful assistant designed to output JSON.",
+                    "content": system_prompt,
+                },
+                {
+                    "role": "assistant",
+                    "content": assistant_prompt,
                 },
                 {
                     "role": "user",
-                    "content": "Answer those questions, one line for each"
-                    + "\n".join(questions),
+                    "content": text,
                 },
             ],
         )
@@ -430,8 +452,16 @@ class InputGenerator:
 if __name__ == "__main__":
     ig = InputGenerator()
     q = 2
-    prompt = create_prompt(t=3, q=q)
-    questions = ig.prompt_question_gpt(prompt, q)["Answer"][0]["questions"]
+    prompt_questions = question_prompt(t=3, q=q)
+    questions: list[str] = cast(
+        list[str], ig.prompt_question_gpt(prompt_questions, q)["Answer"][0]["questions"]
+    )
+    question_amount = len(questions)
+    prompt_answers = answer_prompt(questions)
+    answers = ig.prompt_answer_gpt(question_amount, prompt_answers)["Answer"][0][
+        "answers"
+    ]
+    breakpoint()
     # question_list = [
     #     "What is RDF (Resource Description Framework) used for in the context of web development?",
     #     "Can you explain the basic structure of an RDF statement?",
@@ -454,10 +484,3 @@ if __name__ == "__main__":
     #     "In what ways can genetic algorithms be personalized or customized for specific problem domains?",
     #     "What are some common tools and frameworks used for working with RDF data?",
     # ]
-    answers = ig.prompt_answer_gpt(questions)
-    answers = answers["Answer"][0]
-    for q, a in zip(questions, answers.values()):
-
-        print(f"question: {q}")
-        print(f"answer: {a}")
-        print("-------------------")
