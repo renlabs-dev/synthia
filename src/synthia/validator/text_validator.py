@@ -88,7 +88,6 @@ class TextValidator(Module):
         q = 3
         prompt = create_prompt(t = 3, q = q)
         questions = ig.prompt_question_gpt(prompt, q)['Answer'][0]['questions']
-        questions = [q['question'] for q in questions]
         questions = '\n'.join(questions)
         validator_answer = ig.prompt_answer_gpt(questions)['Answer'][0]
         answer_list: list[str] = []
@@ -145,7 +144,7 @@ if __name__ == "__main__":
     KEY_MNEMONIC = "dev01"
     validator = TextValidator(
         Keypair.create_from_mnemonic(
-            "electric suffer nephew rough gentle decline fun body tray account vital clinic"
+            KEY_MNEMONIC
         ),
         SYNTHIA_NETUID
     )

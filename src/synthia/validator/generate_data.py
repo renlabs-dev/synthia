@@ -430,9 +430,8 @@ class InputGenerator:
 if __name__ == "__main__":
     ig = InputGenerator()
     q = 2
-    prompt = create_prompt(k=3, q=q)
+    prompt = create_prompt(t=3, q=q)
     questions = ig.prompt_question_gpt(prompt, q)["Answer"][0]["questions"]
-    question_list = [q["question"] for q in questions]
     # question_list = [
     #     "What is RDF (Resource Description Framework) used for in the context of web development?",
     #     "Can you explain the basic structure of an RDF statement?",
@@ -455,10 +454,9 @@ if __name__ == "__main__":
     #     "In what ways can genetic algorithms be personalized or customized for specific problem domains?",
     #     "What are some common tools and frameworks used for working with RDF data?",
     # ]
-    answers = ig.prompt_answer_gpt(question_list)
+    answers = ig.prompt_answer_gpt(questions)
     answers = answers["Answer"][0]
-    # breakpoint()
-    for q, a in zip(question_list, answers.values()):
+    for q, a in zip(questions, answers.values()):
 
         print(f"question: {q}")
         print(f"answer: {a}")
