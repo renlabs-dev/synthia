@@ -13,8 +13,10 @@ class ValidatorSettings(BaseSettings):
     # currently only limited to openai
     question_model: str = "gpt-3.5-turbo"
     answer_model: str = "gpt-4"
-    question_temperature: float = 0.5
-    answer_temperature: float = 0.1
+    # TODO:
+    # adjust on scoring
+    question_temperature: float = 0 #0.85
+    answer_temperature: float = 0.3
 
     class Config:
         env_prefix = "OPENAI_"
