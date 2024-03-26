@@ -23,12 +23,11 @@
         p2n-overrides = import ./nix/poetry2nix-overrides.nix {
           inherit pkgs p2n;
         };
-        python_pkg = pkgs.python312;
       in
       {
         devShells.default = pkgs.mkShell {
           buildInputs = [
-            python_pkg
+            pkgs.python310
             pkgs.poetry
             pkgs.ruff
           ];
@@ -36,7 +35,7 @@
         packages = rec {
           synthia = p2n.mkPoetryApplication {
             projectDir = ./.;
-            python = python_pkg;
+            python = pkgs.python311;
             overrides = p2n-overrides;
           };
           default = synthia;
