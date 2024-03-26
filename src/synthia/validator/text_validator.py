@@ -4,16 +4,27 @@ Module for validating text submissions on the Synthia subnet.
 This class represents a validator module that runs on the Synthia subnet. It initializes a Wandb run to log validation data, and provides functions to retrieve metadata about the subnet and modules.
 """
 
+import re
+from typing import cast
+import time
 # once we register the synthia subnet, we will update this value
+
+
 from communex.module.module import Module  # type: ignore
 from communex.client import CommuneClient  # type: ignore
 from substrateinterface import Keypair  # type: ignore
 from communex.module.client import serialize  # type: ignore
+from communex.module.client import ModuleClient
 from communex.compat.types import Ss58Address  # type: ignore
-from typing import cast
-import time
-from ._config import ValidatorSettings
 import wandb
+
+from ._config import ValidatorSettings
+from .generate_data import InputGenerator, create_prompt
+
+
+def score(val_answer: str, miner_answer: str):
+    import random
+    return random.randint(0, 100)
 
 SYNTHIA_NETUID = 1
 
@@ -32,6 +43,20 @@ SYNTHIA_NETUID = 1
 
 # Kelvin
 # Implement scoring function based on vector difference using embedings
+
+# TODO: make it match ipv6
+IP_REGEX = re.compile(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d+')
+def extract_address(string: str):
+    """
+    Extracts an address from a string.
+    """
+    return re.search(IP_REGEX, string)
+
+def get_ip_port(adresses: list[str]):
+    filtered_addr = map(extract_address, adresses)
+    ip_port = [x.group(0).split(":") for x in filtered_addr if x is not None]
+    return ip_port
+     
 
 
 class TextValidator(Module):
@@ -54,6 +79,36 @@ class TextValidator(Module):
         """
         module_addreses = client.query_map_address(netuid).values()
         return list(module_addreses)
+    
+    async def validate_step(self):
+        syntia_netuid = self.get_synthia_netuid()
+        modules_adresses = self.get_modules(self.client, syntia_netuid)
+        modules_filtered_address = get_ip_port(modules_adresses)
+        ig = InputGenerator()
+        q = 3
+        prompt = create_prompt(t = 3, q = q)
+        questions = ig.prompt_question_gpt(prompt, q)['Answer'][0]['questions']
+        questions = [q['question'] for q in questions]
+        questions = '\n'.join(questions)
+        validator_answer = ig.prompt_answer_gpt(questions)['Answer'][0]
+        answer_list: list[str] = []
+        for sublist in validator_answer.values():
+            for elem in sublist:
+                answer_list.append(elem)
+        val_answers = '\n'.join(answer_list)
+        for module_ip, module_port in modules_filtered_address:
+            #testing purposes
+            module_ip = "127.0.0.1"
+            module_port = "8000"
+            
+            try:
+                client = ModuleClient(module_ip, int(module_port), self.key)
+                answers = await client.call("generate", {"prompt": questions})
+            except Exception as e:
+                print(f"caught exception {e} on module {module_ip}:{module_port}")
+                continue
+            weight_score = score(val_answers, answers)
+            print(weight_score)
 
     # TODO :
     # - Migrate from wandb to decentralized database, possibly ipfs, the server
@@ -85,3 +140,20 @@ class TextValidator(Module):
         if not settings:
             settings = ValidatorSettings()  # type: ignore
         self.init_wandb(settings, self.key)
+
+if __name__ == "__main__":
+    KEY_MNEMONIC = "dev01"
+    validator = TextValidator(
+        Keypair.create_from_mnemonic(
+            "electric suffer nephew rough gentle decline fun body tray account vital clinic"
+        ),
+        SYNTHIA_NETUID
+    )
+    # modules = validator.get_modules(validator.client, validator.get_synthia_netuid())
+    # print(modules)
+    # print("-------------")
+    # modules_filtered_address = get_ip_port(modules)
+    # print(modules_filtered_address)
+    import asyncio
+    x = asyncio.run(validator.validate_step())
+    
