@@ -359,6 +359,16 @@ def answer_prompt(questions: list[str]) -> str:
 
 
 class InputGenerator:
+    """InputGenerator class for generating questions and answers using OpenAI GPT models.
+
+    This class provides methods to generate questions based on given themes and answers
+    based on the generated questions using the OpenAI GPT models. It interacts with the
+    OpenAI API to create chat completions and process the responses.
+
+    Attributes:
+        validator_settings (ValidatorSettings): Settings for the validator.
+        client (OpenAI): OpenAI API client for making API requests.
+    """
     def __init__(self) -> None:
         self.validator_settings = ValidatorSettings()  # type: ignore
         key = self.validator_settings.api_key
@@ -380,6 +390,19 @@ class InputGenerator:
     def prompt_question_gpt(
         self, text: str, question_amount: int, model: str = "gpt-3.5-turbo"
     ) -> dict[str, Any]:
+        """Generates questions based on given themes using the OpenAI GPT model.
+
+        Args:
+            text: The input text containing the themes and instructions.
+            question_amount: The number of questions to generate.
+            model: The name of the OpenAI GPT model to use (default: "gpt-3.5-turbo").
+
+        Returns:
+            A dictionary containing the generated questions.
+
+        Raises:
+            ValueError: If the API response has an unexpected finish reason.
+        """
         assistant_prompt = (
             "You output only valid JSON, in the following structure:\n"
             f'[{{"questions": ["question1", "question2", ..., "question{question_amount}"]}}]'
@@ -415,7 +438,19 @@ class InputGenerator:
     def prompt_answer_gpt(
         self, question_amount: int, text: str, model: str = "gpt-3.5-turbo"
     ) -> dict[str, Any]:
+        """Generates answers for a given set of questions using the OpenAI GPT model.
 
+        Args:
+            question_amount: The number of answers to generate.
+            text: The input text containing the questions.
+            model: The name of the OpenAI GPT model to use (default: "gpt-3.5-turbo").
+
+        Returns:
+            A dictionary containing the generated answers.
+
+        Raises:
+            ValueError: If the API response has an unexpected finish reason.
+        """
         assistant_prompt = (
             "You output only valid JSON, in the following structure:\n"
             f'[{{"answers": ["answer1", "answer2", ..., "answer{question_amount}"]}}]'
