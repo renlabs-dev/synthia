@@ -348,7 +348,7 @@ def create_prompt(t: int, q: int):
     styles = get_styles()
     theme = random.choices(themes, k=t)
     style = random.choice(styles)
-    prompt = f"Write {q} questions about any of the following themes: {theme} in a {style} style."
+    prompt = f"Instructions: Write `{q}` questions, theme them in any of these categories: {theme} in a {style} style."
     return prompt
 
 
@@ -374,6 +374,16 @@ class InputGenerator:
     def prompt_question_gpt(
         self, text: str, question_amount: int, model: str = "gpt-3.5-turbo"
     ):
+        assistant_prompt = (
+            "You output only valid JSON, in the following structure:\n"
+            f'[{{"questions": ["question1", "question2", ..., "question{question_amount}"]}}]'
+        )
+
+        system_prompt = (
+            f"You are an expert question generator. Your task is to create {question_amount} high-quality, relevant questions based on the given themes. "
+            "Follow the guidelines and examples provided to generate questions in the specified JSON format."
+        )
+
         response = self.client.chat.completions.create(
             model=model,
             temperature=self.validator_settings.question_temperature,
@@ -381,8 +391,11 @@ class InputGenerator:
             messages=[
                 {
                     "role": "system",
-                    "content": f"""Your job is to create {question_amount} questions about the topics that you are given in a specific speech style. 
-                    Make sure to give your questions as json.""",
+                    "content": system_prompt,
+                },
+                {
+                    "role": "assistant",
+                    "content": assistant_prompt,
                 },
                 {
                     "role": "user",
@@ -403,7 +416,11 @@ class InputGenerator:
                     "role": "system",
                     "content": "You are a helpful assistant designed to output JSON.",
                 },
-                {"role": "user", "content": "Answer those questions, one line for each\n" + questions},
+                {
+                    "role": "user",
+                    "content": "Answer those questions, one line for each"
+                    + "\n".join(questions),
+                },
             ],
         )
         answers = self._treat_response(response)
@@ -414,7 +431,7 @@ if __name__ == "__main__":
     ig = InputGenerator()
     q = 2
     prompt = create_prompt(k=3, q=q)
-    questions = ig.prompt_question_gpt(prompt, q)["Answer"][0]['questions']
+    questions = ig.prompt_question_gpt(prompt, q)["Answer"][0]["questions"]
     question_list = [q["question"] for q in questions]
     # question_list = [
     #     "What is RDF (Resource Description Framework) used for in the context of web development?",
@@ -440,7 +457,7 @@ if __name__ == "__main__":
     # ]
     answers = ig.prompt_answer_gpt(question_list)
     answers = answers["Answer"][0]
-    #breakpoint()
+    # breakpoint()
     for q, a in zip(question_list, answers.values()):
 
         print(f"question: {q}")
