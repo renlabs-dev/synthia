@@ -23,10 +23,10 @@ from ._config import ValidatorSettings
 from .generate_data import InputGenerator, question_prompt, answer_prompt
 
 
-def score(val_answer: str, miner_answer: str):
+def score(val_answer: str, miner_answer: str) -> float:
     import random
 
-    return random.randint(0, 100)
+    return float(random.randint(0, 100))
 
 
 SYNTHIA_NETUID = 1
@@ -40,9 +40,9 @@ SYNTHIA_NETUID = 1
 # - query the `SYNTHIA_NETUID` dynamically from the chain name of the subnet
 
 # 3/26 TODO:
-# - [ ] Make sure to send one question at a time to miner, if we run out of questions, 
+# - [ ] Make sure to send one question at a time to miner, if we run out of questions,
 # iterate through the question list again
-# - [ ] Generate new data every `settins.generation_interval` 
+# - [ ] Generate new data every `settins.generation_interval`
 # (this tells us: after N iterations are finish, generate new data)
 # - [ ] make the validation loop run every `settings.iteration_interval` which is defined in seconds (basically time sleep)
 
@@ -58,8 +58,43 @@ SYNTHIA_NETUID = 1
 # TODO: make it match ipv6
 IP_REGEX = re.compile(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d+")
 
-def set_weights(score_dict: dict[int, int]):
-    pass
+
+def set_weights(
+    score_dict: dict[int, float], netuid: int, client: CommuneClient, key: Keypair
+) -> None:
+    """Set weights for miners based on their scores.
+
+    The lower the score, the higher the weight.
+
+    Args:
+        score_dict (dict[int, float]): A dictionary mapping miner UIDs to their scores.
+        netuid (int): The network UID.
+        client (CommuneClient): The CommuneX client.
+        key (Keypair): The keypair for signing transactions.
+    """
+    # Create a new dictionary to store the weighted scores
+    weighted_scores: dict[int, int] = {}
+
+    # Calculate the sum of all inverted scores
+    total_inverted_score = sum(1 - score for score in score_dict.values())
+
+    # Iterate over the items in the score_dict
+    for uid, score in score_dict.items():
+        # Calculate the normalized weight as an integer
+        weight = int((1 - score) / total_inverted_score * 100)
+
+        # Add the weighted score to the new dictionary
+        weighted_scores[uid] = weight
+
+    # filter out 0 weights
+    weighted_scores = {k: v for k, v in weighted_scores.items() if v != 0}
+
+    uids = list(weighted_scores.keys())
+    weights = list(weighted_scores.values())
+
+    return  # delete this line in the future
+    client.vote(key=key, uids=uids, weights=weights, netuid=netuid)
+
 
 def extract_address(string: str):
     """
@@ -165,7 +200,7 @@ class TextValidator(Module):
             question_amount, prompt_answers, model=answer_model
         )["Answer"][0]["answers"]
 
-        score_dict: dict[int, int] = {}
+        score_dict: dict[int, float] = {}
         wandb_dict: dict[Any, Any] = {}
         # == Validation loop / Scoring ==
         # TODO: refactor passed questions, answers
@@ -182,16 +217,18 @@ class TextValidator(Module):
                 print(f"caught exception {e} on module {module_ip}:{module_port}")
                 continue
             weight_score = score(validator_answer, answers)
-            
-            if weight_score > 0:
+
+            # score has to be lower than 1, as one is the worse score
+            if weight_score < 1:
                 score_dict[uid] = weight_score
 
                 for i, question in enumerate(questions):
                     wandb_dict[f"question_{i}"] = question
                     wandb_dict[f"validator_answer_{i}"] = validator_answer[i]
                     wandb_dict[f"miner_answer_{i}_{uid}"] = answers[i]
-        
-        set_weights(score_dict)
+
+        _ = set_weights(score_dict, self.netuid, self.client, self.key)
+
     # TODO :
     # - Migrate from wandb to decentralized database, possibly ipfs, the server
     # has to check for the signature of the data. (This way is used even on S18, but we don't like it)
@@ -219,9 +256,8 @@ class TextValidator(Module):
         )
 
         # Log the wandb_dict information to wandb after the run is complete
-        run.log(self.wandb_dict) # type: ignore
-        run.finish(): # type: ignore
-
+        run.log(self.wandb_dict)  # type: ignore
+        run.finish()  # type: ignore
 
     def main(self, settings: ValidatorSettings | None = None) -> None:
         if not settings:
@@ -244,6 +280,10 @@ if __name__ == "__main__":
     validator = TextValidator(
         Keypair.create_from_mnemonic(KEY_MNEMONIC), SYNTHIA_NETUID
     )
+    scores = {1: 0, 12: 0.5, 3: 0.8, 4: 0.9, 5: 1}
+    print(set_weights(scores, SYNTHIA_NETUID, validator.client, validator.key))
+    exit()
+
     # modules = validator.get_modules(validator.client, validator.get_synthia_netuid())
     # print(modules)
     # print("-------------")
