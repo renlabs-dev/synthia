@@ -20,6 +20,10 @@ polars-distance = "^0.4.2"
 gensim = "^4.3.2"
 pot = "^0.9.3"
 numpy = "^1.26.4"
+# classifiers ML
+transformers = "^4.39.1"
+tensorflow = "^2.16.1"
+tf-keras = "^2.16.0"
 
 
 [tool.poetry.group.dev]
