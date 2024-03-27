@@ -1,6 +1,6 @@
 .direnv
 /env/**/*.env
 .ipynb_checkpoints
-
+/wandb
 /.tests
 __pycache__

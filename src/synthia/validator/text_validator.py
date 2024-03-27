@@ -7,6 +7,8 @@ This class represents a validator module that runs on the Synthia subnet. It ini
 import re
 from typing import cast, Any
 import time
+import os
+import json
 
 # once we register the synthia subnet, we will update this value
 
@@ -15,6 +17,7 @@ from communex.module.module import Module  # type: ignore
 from communex.client import CommuneClient  # type: ignore
 from substrateinterface import Keypair  # type: ignore
 from communex.module.client import serialize  # type: ignore
+from communex.module._signer import sign  # type: ignore
 from communex.module.client import ModuleClient  # type: ignore
 from communex.compat.types import Ss58Address  # type: ignore
 import wandb
@@ -50,7 +53,7 @@ SYNTHIA_NETUID = 1
 # - [x] figure out a better prompt
 # - [x] save the interaction between a validator and miner to a db
 # - [ ] test wandb saving
-# - [ ] implement set_weights funciton
+# - [x] implement set_weights funciton
 
 # Kelvin
 # Implement scoring function based on vector difference using embedings
@@ -233,25 +236,38 @@ class TextValidator(Module):
     # - Migrate from wandb to decentralized database, possibly ipfs, the server
     # has to check for the signature of the data. (This way is used even on S18, but we don't like it)
     def init_wandb(self, settings: ValidatorSettings, keypair: Keypair):
-        # place holder, query later
-        key = cast(Ss58Address, keypair.ss58_address)
-        uid = self.client.get_uids(key=key)
+        # key = cast(Ss58Address, keypair.ss58_address)
+
+        uid = 0  # ! place holder, take this out in prod
+        # uid = self.client.get_uids(key=key)
+        # # Make sure key is registered on the network
+        # assert uid is not None, "Key is not registered on the network"
+
         run_name = f"validator-{uid}"
-        settings.uid = uid
-        settings.key = keypair.ss58_address
         settings.run_name = run_name
-        settings.type = "validator"
+        settings.uid = uid
+        settings.key = cast(Ss58Address, keypair.ss58_address)
         settings.timestamp = time.time()
-        config = settings.model_dump()
-        signature = keypair.sign(serialize(config))
-        config["signature"] = signature
-        # Initialize the wandb run for the single project
-        run = wandb.init(  #  type: ignore
+        # convert settings to dict
+        config_dict = settings.model_dump()
+
+        # sign the config, to make sure the validator is registered on our netuid
+        signature = sign(keypair, json.dumps(config_dict).encode("utf-8"))
+
+        # convert the signature to a hexadecimal string
+        signature_hex = signature.hex()
+
+        # add the signature to the config_dict
+        config_dict["signature"] = signature_hex
+
+        # Avoid saving locally
+        os.environ["WANDB_MODE"] = "online"
+
+        run = wandb.init(  # type: ignore
             name=run_name,
             project=settings.project_name,
             entity="synthia-subnet",
-            config=config,
-            dir=settings.storage_path,
+            config=config_dict,  # Pass config_dict directly, not config
             reinit=True,
         )
 
@@ -263,26 +279,34 @@ class TextValidator(Module):
         if not settings:
             settings = ValidatorSettings()  # type: ignore
 
-        # Run validation
-        asyncio.run(self.validate_step(settings, self.netuid))
-
         # Storage
         if settings.use_wandb:
-            # Store info into wandb
-            self.wandb_dict = {}  # Initialize wandb_dict as an empty dictionary
-            self.init_wandb(settings, self.key)
+            run = self.init_wandb(settings, self.key)
+        else:
+            run = None
+
+        # Run validation
+        self.wandb_dict = {}  # Initialize wandb_dict as an empty dictionary
+        asyncio.run(self.validate_step(settings, self.netuid))
+
+        if run:
+            run.log(self.wandb_dict)  # type: ignore
+            run.finish()  # type: ignore
 
 
 if __name__ == "__main__":
+
     KEY_MNEMONIC = (
         "electric suffer nephew rough gentle decline fun body tray account vital clinic"
     )
     validator = TextValidator(
         Keypair.create_from_mnemonic(KEY_MNEMONIC), SYNTHIA_NETUID
     )
+    validator.wandb_dict = {}
+    validator.init_wandb(ValidatorSettings(), validator.key)
+    exit()
     scores = {1: 0, 12: 0.5, 3: 0.8, 4: 0.9, 5: 1}
     print(set_weights(scores, SYNTHIA_NETUID, validator.client, validator.key))
-    exit()
 
     # modules = validator.get_modules(validator.client, validator.get_synthia_netuid())
     # print(modules)
