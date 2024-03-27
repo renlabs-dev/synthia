@@ -12,15 +12,45 @@ class OpenAIModule(Module):
 
     @endpoint
     def generate(self, prompt: str) -> dict[str, str]:
+        """Generates an answer based on the given prompt using OpenAI's chat completion API.
+
+        Args:
+            prompt: The question or prompt to generate an answer for.
+
+        Returns:
+            A dictionary containing the generated answer with the key "answer".
+
+        Raises:
+            HTTPException: If the API response has a finish_reason other than "stop".
+        """
+
+        system_prompt = (
+            "You are an expert at answering questions."
+            "Answer the given question thoroughly and accurately."
+            "Output your answer in the JSON format specified."
+        )
+
+        assistant_prompt = (
+            "Provide your answer in this JSON format, with no other text:\n"
+            '{"answer": "Replace this with your actual answer to the question."}'
+        )
+
         response = self.client.chat.completions.create(
             model=self.settings.model,
             response_format={"type": "json_object"},
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a helpful assistant designed to output JSON.",
+                    "content": system_prompt,
                 },
-                {"role": "user", "content": prompt},
+                {
+                    "role": "assistant",
+                    "content": assistant_prompt,
+                },
+                {
+                    "role": "user",
+                    "content": prompt,
+                },
             ],
             max_tokens=self.settings.max_tokens,
             temperature=self.settings.temperature,

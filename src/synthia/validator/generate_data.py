@@ -369,6 +369,7 @@ class InputGenerator:
         validator_settings (ValidatorSettings): Settings for the validator.
         client (OpenAI): OpenAI API client for making API requests.
     """
+
     def __init__(self) -> None:
         self.validator_settings = ValidatorSettings()  # type: ignore
         key = self.validator_settings.api_key
@@ -410,7 +411,7 @@ class InputGenerator:
 
         system_prompt = (
             f"You are an expert question generator. Your task is to create {question_amount} high-quality, relevant questions based on the given themes. "
-            "Follow the guidelines and examples provided to generate questions in the specified JSON format."
+            "Follow the guidelines and examples provided to generate the specified JSON format."
         )
 
         response = self.client.chat.completions.create(
@@ -458,7 +459,7 @@ class InputGenerator:
 
         system_prompt = (
             f"You are an expert answer generator. Your task is to create {question_amount} high-quality, relevant answers based on the given questions. "
-            "Follow the guidelines and examples provided to generate answers in the specified JSON format."
+            "Follow the guidelines and examples provided to generate the specified JSON format."
         )
 
         response = self.client.chat.completions.create(

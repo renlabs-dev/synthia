@@ -36,14 +36,14 @@ SYNTHIA_NETUID = 1
 
 # TODO:
 # Jairo
-# - implement retry mechanism on question answer generation
-# - make sure miner instructions are the same as answer generation of validator. WIth the same system instructions and tempreature
-# - implement the main validation loop -> get question, get answer, loop through miners, ...  (without validation that is done by kelvin)
+# - [ ] implement retry mechanism on question answer generation
+# - [x] make sure miner instructions are the same as answer generation of validator. WIth the same system instructions and tempreature
+# - [ ]implement the main validation loop -> get question, get answer, loop through miners, ...  (without validation that is done by kelvin)
 # after scoring set weights
 # - query the `SYNTHIA_NETUID` dynamically from the chain name of the subnet
 
 # 3/26 TODO:
-# - [ ] Make sure to send one question at a time to miner, if we run out of questions,
+# - [x] Make sure to send one question at a time to miner, if we run out of questions,
 # iterate through the question list again
 # - [ ] Generate new data every `settins.generation_interval`
 # (this tells us: after N iterations are finish, generate new data)
@@ -56,7 +56,7 @@ SYNTHIA_NETUID = 1
 # - [x] implement set_weights funciton
 
 # Kelvin
-# Implement scoring function based on vector difference using embedings
+# -[ ] Implement scoring function based on vector difference using embedings
 
 # TODO: make it match ipv6
 IP_REGEX = re.compile(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d+")
@@ -150,12 +150,6 @@ class TextValidator(Module):
         self.client = CommuneClient(url=self.node_url)
         self.key = key
         self.netuid = netuid
-
-    def get_synthia_netuid(self):
-        """
-        Retrives the netuid of the synthia subnet
-        """
-        return self.netuid
 
     def get_modules(self, client: CommuneClient, netuid: int) -> dict[int, str]:
         """Retrieves all module addresses from the subnet.

@@ -1,4 +1,4 @@
-from communex.compat.types import Ss58Address
+from communex.compat.types import Ss58Address  #  type: ignore
 from pydantic_settings import BaseSettings
 
 
@@ -10,7 +10,7 @@ class ValidatorSettings(BaseSettings):
     max_tokens: int | None = None
     # currently only limited to openai
     question_model: str = "gpt-3.5-turbo"
-    answer_model: str = "gpt-4"
+    answer_model: str = "gpt-4-turbo-preview"
     generation_interval: int = 3  # after N iterations are finish, generate new data
     # TODO: adjust the following values
     question_temperature: float = 0  # 0.85
