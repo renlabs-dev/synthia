@@ -164,7 +164,7 @@ class TextValidator(Module):
         module_addreses = client.query_map_address(netuid)
         return module_addreses
 
-    async def validate_step(self, settings: ValidatorSettings, syntia_netuid: int):
+    async def validate_step(self, settings: ValidatorSettings, syntia_netuid: int) -> None:
         """Performs a validation step.
 
         Generates questions based on the provided settings, prompts modules to
@@ -237,7 +237,7 @@ class TextValidator(Module):
     # TODO :
     # - Migrate from wandb to decentralized database, possibly ipfs, the server
     # has to check for the signature of the data. (This way is used even on S18, but we don't like it)
-    def init_wandb(self, settings: ValidatorSettings, keypair: Keypair):
+    def init_wandb(self, settings: ValidatorSettings, keypair: Keypair) -> Any:
         # key = cast(Ss58Address, keypair.ss58_address)
 
         uid = 0  # ! place holder, take this out in prod
@@ -273,9 +273,7 @@ class TextValidator(Module):
             reinit=True,
         )
 
-        # Log the wandb_dict information to wandb after the run is complete
-        run.log(self.wandb_dict)  # type: ignore
-        run.finish()  # type: ignore
+        return run
 
     def main(self, settings: ValidatorSettings | None = None) -> None:
         if not settings:
