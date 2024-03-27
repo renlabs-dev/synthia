@@ -15,6 +15,19 @@ anthropic = "^0.21.3"
 openai = "^1.14.2"
 wandb = "^0.16.4"
 communex = "^0.1.6"
+polars = "^0.20.16"
+polars-distance = "^0.4.2"
+gensim = "^4.3.2"
+pot = "^0.9.3"
+numpy = "^1.26.4"
+
+
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+ipython = "^8.22.2"
+isort = "^5.13.2"
 
 
 [build-system]
