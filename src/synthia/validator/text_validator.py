@@ -207,6 +207,11 @@ class TextValidator(Module):
         wandb_dict: dict[Any, Any] = {}
         # == Validation loop / Scoring ==
         # TODO: refactor passed questions, answers
+
+        # tuples of questions and answers
+        dataset: list[tuple[str, str]] = list(zip(questions, validator_answer))
+        dataset_index = 0
+
         for uid, connection in modules_filtered_address.items():
             module_ip, module_port = connection
             # testing purposes
@@ -215,22 +220,25 @@ class TextValidator(Module):
 
             try:
                 client = ModuleClient(module_ip, int(module_port), self.key)
-                answers = await client.call("generate", {"prompt": questions})
+                question, answer = dataset[dataset_index]
+                miner_answer = await client.call("generate", {"prompt": question})
             except Exception as e:
                 print(f"caught exception {e} on module {module_ip}:{module_port}")
                 continue
-            weight_score = score(validator_answer, answers)
 
+            weight_score = score(answer, miner_answer)
             # score has to be lower than 1, as one is the worse score
             if weight_score < 1:
                 score_dict[uid] = weight_score
 
-                for i, question in enumerate(questions):
-                    wandb_dict[f"question_{i}"] = question
-                    wandb_dict[f"validator_answer_{i}"] = validator_answer[i]
-                    wandb_dict[f"miner_answer_{i}_{uid}"] = answers[i]
+            wandb_dict["question"] = question
+            wandb_dict["validator_answer"] = answer
+            wandb_dict[f"miner_answer_{uid}"] = miner_answer
 
-        _ = set_weights(score_dict, self.netuid, self.client, self.key)
+            _ = set_weights(score_dict, self.netuid, self.client, self.key)
+
+            # increase the dataset index, in a way we don't exceed the lenght of the dataset
+            dataset_index = (dataset_index + 1) % len(dataset)
 
     # TODO :
     # - Migrate from wandb to decentralized database, possibly ipfs, the server
@@ -303,7 +311,7 @@ if __name__ == "__main__":
         Keypair.create_from_mnemonic(KEY_MNEMONIC), SYNTHIA_NETUID
     )
     validator.wandb_dict = {}
-    validator.init_wandb(ValidatorSettings(), validator.key)
+    validator.init_wandb(ValidatorSettings(), validator.key)  #  type: ignore
     exit()
     scores = {1: 0, 12: 0.5, 3: 0.8, 4: 0.9, 5: 1}
     print(set_weights(scores, SYNTHIA_NETUID, validator.client, validator.key))
