@@ -66,3 +66,14 @@ class OpenAIModule(Module):
                 return {"answer": content}
 
         return {"answer": ""}
+if __name__ == "__main__":
+    from communex.module.server import ModuleServer
+    from substrateinterface import Keypair
+
+    import uvicorn
+    KEY_MNEMONIC = "electric suffer nephew rough gentle decline fun body tray account vital clinic"
+    key = Keypair.create_from_mnemonic(KEY_MNEMONIC)
+    openai = OpenAIModule()
+    server = ModuleServer(openai, key)
+    app = server.get_fastapi_app()
+    uvicorn.run(app, host="127.0.0.1", port=8000)
