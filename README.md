@@ -43,12 +43,12 @@ Commune synthetic data generation subnet, this subnet is planned to be released 
 
    For OpenAI:
    ```bash
-   comx module serve synthia.miner.openai.OpenAIModule <key>
+   comx module serve synthia.miner.openai.OpenAIModule <key> --subnets-whitelist <synthia netuid>
    ```
 
    For Anthropic:
    ```bash
-   comx module serve synthia.miner.anthropic.AnthropicModule <key>
+   comx module serve synthia.miner.anthropic.AnthropicModule <key> --subnets-whitelist <synthia netuid>
    ```
 
 4. Register the module on the Synthia subnet:
@@ -56,6 +56,23 @@ Commune synthetic data generation subnet, this subnet is planned to be released 
    ```bash
    comx module register <name> <public-ip> <port> <key> <synthia netuid>
    ```
+
+### Note
+
+- Make sure to serve and register the module with the same key.
+- If you are not sure about your `public ip` address: 
+
+   ```bash
+   curl -4 https://ipinfo.io/ip
+   ```
+
+- If you are not sure about the `synthia netuid` number:
+
+   ```bash
+   comx subnet list
+   ```
+
+   Look for the name `synthia` and copy the netuid number.
 
 ## Running A Validator
 WIP
