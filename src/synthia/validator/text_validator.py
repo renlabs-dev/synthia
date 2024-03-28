@@ -33,15 +33,13 @@ def score(val_answer: str, miner_answer: str) -> float:
     return float(random.randint(0, 100))
 
 
-SYNTHIA_NETUID = 1
-
 # TODO:
 # Jairo
 # - [x] implement retry mechanism on question answer generation
 # - [x] make sure miner instructions are the same as answer generation of validator. WIth the same system instructions and tempreature
 # - [ ]implement the main validation loop -> get question, get answer, loop through miners, ...  (without validation that is done by kelvin)
 # after scoring set weights
-# - query the `SYNTHIA_NETUID` dynamically from the chain name of the subnet
+#  [x] - query the `SYNTHIA_NETUID` dynamically from the chain name of the subnet
 
 # 3/26 TODO:
 # - [x] Make sure to send one question at a time to miner, if we run out of questions,
@@ -116,6 +114,25 @@ def extract_address(string: str):
     return re.search(IP_REGEX, string)
 
 
+def get_synthia_netuid(clinet: CommuneClient, subnet_name: str = "synthia"):
+    """
+    Retrieves the network UID of the Synthia subnet.
+
+    Args:
+        client (CommuneClient): The CommuneX client.
+        subnet_name (str, optional): The name of the Synthia subnet. Defaults to "synthia".
+
+    Returns:
+        int: The network UID of the Synthia subnet.
+    """
+
+    subnets = clinet.query_map_subnet_names()
+    for netuid, name in subnets.items():
+        if name == subnet_name:
+            return netuid
+    raise ValueError(f"Subnet {subnet_name} not found")
+
+
 def get_ip_port(modules_adresses: dict[int, str]):
     filtered_addr = {id: extract_address(addr) for id, addr in modules_adresses.items()}
     ip_port = {
@@ -154,10 +171,12 @@ class TextValidator(Module):
             IP addresses and ports from a list of strings.
     """
 
-    def __init__(self, key: Keypair, netuid: int, embedder: Embedder | None=None) -> None:
+    def __init__(
+            self, key: Keypair, netuid: int, client: CommuneClient, 
+            embedder: Embedder | None=None
+            ) -> None:
         super().__init__()
-        self.node_url = "wss://commune.api.onfinality.io/public-ws"
-        self.client = CommuneClient(url=self.node_url)
+        self.client = client
         self.key = key
         self.netuid = netuid
         if not embedder:
@@ -176,6 +195,7 @@ class TextValidator(Module):
         """
         module_addreses = client.query_map_address(netuid)
         return module_addreses
+
 
     def _get_validation_dataset(self, settings: ValidatorSettings):
         ig = InputGenerator()
@@ -200,10 +220,6 @@ class TextValidator(Module):
         dataset: list[tuple[str, str]] = list(zip(questions, validator_answer))
         questions_age = time.time()
         return dataset, questions_age
-
-
-    def _get_euclidian_distance(self, str1: str, str2: str):
-        pass
 
 
     async def _get_miner_prediction(self, connection: list[str], question: str):
@@ -240,8 +256,9 @@ class TextValidator(Module):
             print(f"caught exception {e} on module {connection}")
             return None, None
         
-
-    async def validate_step(self, settings: ValidatorSettings, syntia_netuid: int) -> None:
+    async def validate_step(
+        self, settings: ValidatorSettings, syntia_netuid: int
+    ) -> None:
         """Performs a validation step.
 
         Generates questions based on the provided settings, prompts modules to
@@ -358,13 +375,16 @@ class TextValidator(Module):
 
 
 if __name__ == "__main__":
-
+    node_url = "ws://localhost:9944"
+    client = CommuneClient(node_url)
+    SYNTHIA_NETUID = get_synthia_netuid(client)
     KEY_MNEMONIC = (
         "electric suffer nephew rough gentle decline fun body tray account vital clinic"
     )
     validator = TextValidator(
-        Keypair.create_from_mnemonic(KEY_MNEMONIC), SYNTHIA_NETUID
+        Keypair.create_from_mnemonic(KEY_MNEMONIC), SYNTHIA_NETUID, client
     )
+
     setting = ValidatorSettings() #type: ignore
 
     # validator.wandb_dict = {}
@@ -372,6 +392,14 @@ if __name__ == "__main__":
     # exit()
     # scores = {1: 0, 12: 0.5, 3: 0.8, 4: 0.9, 5: 1}
     # print(set_weights(scores, SYNTHIA_NETUID, validator.client, validator.key))
+
+    print(get_synthia_netuid(validator.client))
+    exit()
+    validator.wandb_dict = {}
+    validator.init_wandb(ValidatorSettings(), validator.key)  #  type: ignore
+    scores = {1: 0, 12: 0.5, 3: 0.8, 4: 0.9, 5: 1}
+    print(set_weights(scores, SYNTHIA_NETUID, validator.client, validator.key))
+
 
     # modules = validator.get_modules(validator.client, validator.get_synthia_netuid())
     # print(modules)
