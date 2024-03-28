@@ -158,7 +158,15 @@ def main(openai_settings: OpenAISettings):
     distancer = JairiumDistancer()
     ai_dist_list = []
     dist_dist_list = []
+    classider = get_classifier()
     for example_items in examples:
+        # Before validating with embedder,
+        # make sure the text is not classified as gibberish (nonsense).
+        is_classified = list(map(lambda x: do_classify(classider, x), example_items))
+        # if it is, skip it
+        if None in is_classified:
+            continue
+
         embeddings = list(map(openai_embedder.get_embedding, example_items))
         embedding_a, embedding_b = embeddings
         ai_dist = euclidean_distance(embedding_a, embedding_b)
