@@ -21,6 +21,8 @@ from communex.module.client import serialize  # type: ignore
 from communex.module._signer import sign  # type: ignore
 from communex.module.client import ModuleClient  # type: ignore
 from communex.compat.types import Ss58Address  # type: ignore
+import wandb
+import asyncio
 
 from ._config import ValidatorSettings
 from .generate_data import InputGenerator, question_prompt, answer_prompt
@@ -30,7 +32,7 @@ from .similarity import OpenAIEmbedder, OpenAISettings, euclidean_distance, Embe
 def score(val_answer: str, miner_answer: str) -> float:
     import random
 
-    return float(random.randint(0, 100))
+    return float(random.randint(0, 1))
 
 
 # TODO:
@@ -49,6 +51,7 @@ def score(val_answer: str, miner_answer: str) -> float:
 # - [ ] make the validation loop run every `settings.iteration_interval` which is defined in seconds (basically time sleep)
 
 # Honza
+# - [ ] focus only on claude in the validation
 # - [x] figure out a better prompt
 # - [x] save the interaction between a validator and miner to a db
 # - [ ] test wandb saving
@@ -313,6 +316,8 @@ class TextValidator(Module):
 
                 # increase the dataset index, in a way we don't exceed the lenght of the dataset
                 dataset_index = (dataset_index + 1) % len(dataset)
+
+        _ = set_weights(score_dict, self.netuid, self.client, self.key)
 
     # TODO :
     # - Migrate from wandb to decentralized database, possibly ipfs, the server

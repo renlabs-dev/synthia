@@ -16,7 +16,7 @@ class ValidatorSettings(BaseSettings):
     question_temperature: float = 0  # 0.85
     answer_temperature: float = 0.3
     # questions to generate in validation loop
-    question_amount: int = 40
+    question_amount: int = 10
     # random themes to choose
     theme_amount: int = 3
 
