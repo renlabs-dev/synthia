@@ -6,26 +6,15 @@ import openai
 import numpy
 import polars as pl
 import polars_distance
+import time
 
+from ..utils import timeit
 
 def _do_debug():
     from IPython import embed  # type: ignore
 
     embed()
 
-import time
-from functools import wraps
-
-def timeit(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        end_time = time.time()
-        execution_time = end_time - start_time
-        print(f"Execution time of {func.__name__}: {execution_time:.6f} seconds")
-        return result
-    return wrapper
 
 examples = [
     (
@@ -88,8 +77,7 @@ class OpenAIEmbedder(Embedder):
     def __init__(self, openai_settings: OpenAISettings, model: str = "text-embedding-3-small"):
         self.openai_settings = openai_settings
         self.client = openai.OpenAI(api_key=self.openai_settings.api_key)
-
-    @timeit
+    
     def get_embedding(self, input: str):
         response = self.client.embeddings.create(
             model="text-embedding-3-small", input=input
@@ -105,11 +93,9 @@ class JairiumDistancer(Distancer):
         word_vectors = gensim_api.load("glove-wiki-gigaword-100")  # type: ignore
         self.word_vectors = word_vectors
 
-    @timeit
     def get_distance(self, input_1: str, input_2: str) -> float:
         dist: float = self.word_vectors.wmdistance(input_1, input_2)  # type: ignore
         return dist  # type: ignore
-
 def euclidean_distance(list_1: list[float], list_2: list[float]) -> float:
     vec_1 = numpy.array(list_1)
     vec_2 = numpy.array(list_2)
