@@ -2,6 +2,7 @@ from fastapi import HTTPException
 from anthropic import Anthropic, APIError
 from communex.module.module import Module, endpoint  # type: ignore
 from ._config import AnthropicSettings  # Import the AnthropicSettings class from config
+from typing import Any
 
 
 class AnthropicModule(Module):
@@ -14,38 +15,40 @@ class AnthropicModule(Module):
     def generate(self, prompt: str) -> dict[str, str]:
         try:
             system_prompt = (
-                "You are an expert at answering questions."
-                "Answer the given question thoroughly and accurately."
-                "Output your answer in the JSON format specified."
+                "You are an expert explanation generator. "
+                "Generate an explanation based on the given instructions. "
+                "Provide the output solely in the specified JSON format, without any extra text or deviations."
             )
             assistant_prompt = (
-                "Provide your answer in this JSON format, with no other text:\n"
-                '{"answer": "Replace this with your actual answer to the question."}'
+                "Output the answer strictly in the following JSON format:\n"
+                '{"explanation": "replace this with your actual explanation."}\n'
+                "Provide the output solely in the specified JSON format, without any extra text or deviations."
             )
-
-            response = self.client.completions.create(
+            message = self.client.messages.create(
                 model=self.settings.model,
-                prompt=f"{system_prompt}\n{assistant_prompt}\n\nHuman: {prompt}\nAssistant:",
-                max_tokens_to_sample=self.settings.max_tokens,
+                max_tokens=self.settings.max_tokens,
                 temperature=self.settings.temperature,
-                stop_sequences=["\nHuman:"],
+                system=system_prompt,
+                messages=[
+                    {"role": "user", "content": [{"type": "text", "text": prompt}]},
+                    {
+                        "role": "assistant",
+                        "content": [{"type": "text", "text": assistant_prompt}],
+                    },
+                ],
             )
-            completion = response.completion
-            if completion.endswith("\nHuman:"):
-                content = completion[:-7].strip()
-            else:
-                content = completion.strip()
-
-            # Extract the JSON content from the completion
-            try:
-                json_start = content.index("{")
-                json_end = content.rindex("}")
-                json_content = content[json_start : json_end + 1]
-                return {"answer": json_content}
-            except (ValueError, IndexError):
-                raise HTTPException(
-                    status_code=400, detail="Invalid JSON format in the response"
-                )
-
+            return self._treat_response(message)
         except APIError as e:
             raise HTTPException(status_code=e.status_code, detail=str(e)) from e  # type: ignore
+
+    def _treat_response(self, message: Any) -> dict[str, str]:
+        content = message.messages[-1].content.strip()
+        try:
+            json_start = content.index("{")
+            json_end = content.rindex("}")
+            json_content = content[json_start : json_end + 1]
+            return {"answer": json_content}
+        except (ValueError, IndexError):
+            raise HTTPException(
+                status_code=400, detail="Invalid JSON format in the response"
+            )

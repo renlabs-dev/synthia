@@ -5,20 +5,10 @@ from pydantic_settings import BaseSettings
 class ValidatorSettings(BaseSettings):
     api_key: str  # openai key, used to generate questions and answers
     # == Text generation ==
-    model: str | None = None
-    temperature: int | None = None
-    max_tokens: int | None = None
-    # currently only limited to openai
-    question_model: str = "gpt-3.5-turbo"
-    answer_model: str = "gpt-4-turbo-preview"
-    generation_interval: int = 3  # after N iterations are finish, generate new data
-    # TODO: adjust the following values
-    question_temperature: float = 0  # 0.85
-    answer_temperature: float = 0.3
-    # questions to generate in validation loop
-    question_amount: int = 10
-    # random themes to choose
-    theme_amount: int = 3
+    model: str = "claude-3-opus-20240229"
+    temperature: float = 0.2
+    max_tokens: int = 1000
+    explanations_amount: int = 5 # do not go above 5
 
     # == Wandb ==
     use_wandb: bool = False
@@ -31,8 +21,9 @@ class ValidatorSettings(BaseSettings):
     timestamp: float | None = None
 
     # == Scoring ==
+    # sleep time between each iteration
     iteration_interval: int = 1200
 
     class Config:
-        env_prefix = "OPENAI_"
-        env_file = "env/openai.env"
+        env_prefix = "ANTHROPIC_"
+        env_file = "env/anthropic.env"

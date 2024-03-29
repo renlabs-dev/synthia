@@ -1,30 +1,13 @@
 # Synthia
+> Commune synthetic data generation subnet, this subnet is planned to be released shortly after incentive update (incoming blockchain version 1.3.0)
 
 Welcome to the Synthia subnet, a bleeding edge initiative to accelerate the open-source AI space. Our mission is to harness the power of decentralized cryptoeconomics to produce synthetic training data with verified quality at mega-scale.
 
-In the rapidly evolving world of artificial intelligence, synthetic data has emerged as a crucial component in the training of advanced models. By utilizing state-of-the-art APIs like OpenAI (GPT4) and Anthropic (Claude3) we can generate high-quality and diverse synthetic prompt-response pairs.
+In the rapidly evolving world of artificial intelligence, synthetic data has emerged as a crucial component in the training of advanced models. By utilizing the state-of-the-art Anthropic Claude API, we can generate high-quality and diverse synthetic prompt-response pairs. The data validation process is focused solely on leveraging Claude's capabilities. We also advise data mining through Claude, although support for OpenAI's API is available as well.
 
 Major AI labs have already recognized the potential of synthetic data and are actively utilizing it to enhance their models. However, access to such data remains limited for the broader open-source community. This is where the Synthia subnet comes in.
 
-By harnessing the power of Commune’s decentralized cryptoeconomic incentives we aim to create the largest reliably high-quality synthetic intelligence dataset in the world that will serve as a catalyst for innovation in the Open-Source AI space.
-
-Join us on this important journey as we distill the Closed-Source intelligence right into the hands of the Open-Source Community!
-
-# WIP
-
-Commune synthetic data generation subnet, this subnet is planned to be released shortly after incentive update (incoming blockchain version 1.3.0)
-
-- [ ] Implement Synthia Validator
-
-  - [ ] Miner communication
-  - [ ] Dataset generation
-  - [ ] Data storage
-  - [ ] Decentralized database setup
-  - [ ] Data validation
-  - [ ] Data retrieval
-
-- [ ] Implement Synthia Miner
-  - [ ] Claude / Openai / Gemini API support
+By harnessing the power of Commune's decentralized cryptoeconomic incentives we aim to create the largest reliably high-quality synthetic intelligence dataset in the world that will serve as a catalyst for innovation in the Open-Source AI space. Join us on this important journey as we distill the Closed-Source intelligence right into the hands of the Open-Source Community!
 
 ## Running Miner
 
