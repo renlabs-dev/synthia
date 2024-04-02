@@ -9,25 +9,31 @@ from typing import cast, Any, Sequence
 import time
 import os
 import json
-from math import sqrt
+2
 
 # once we register the synthia subnet, we will update this value
 
 
+import numpy as np
 import wandb
 from communex.module.module import Module  # type: ignore
 from communex.client import CommuneClient  # type: ignore
 from substrateinterface import Keypair  # type: ignore
-from communex.module.client import serialize  # type: ignore
 from communex.module._signer import sign  # type: ignore
 from communex.module.client import ModuleClient  # type: ignore
 from communex.compat.types import Ss58Address  # type: ignore
 import asyncio
+from fuzzywuzzy import fuzz
+
+
 
 from ._config import ValidatorSettings
 from .generate_data import InputGenerator, explanation_prompt
 from ..utils import retry
 from .similarity import OpenAIEmbedder, OpenAISettings, euclidean_distance, Embedder
+from ..miner._config import AnthropicSettings
+from ..miner.anthropic import AnthropicModule
+from .meta_prompt import get_miner_prompt
 
 
 def score(val_answer: str, miner_answer: str) -> float:
@@ -100,15 +106,6 @@ def set_weights(
 
     # client.vote(key=key, uids=uids, weights=weights, netuid=netuid)
     return  # delete this line in the future
-
-
-def manhattam_norm(vec_list: Sequence[list[float]]):
-    normalized_vecs: Sequence[list[float]] = []
-    for vec in vec_list:
-        abs_sum = abs(sum(vec))
-        normalized_vec = [scalar / abs_sum for scalar in vec]
-        normalized_vecs.append(normalized_vec)
-    return normalized_vecs
 
 
 def extract_address(string: str):
@@ -189,6 +186,7 @@ class TextValidator(Module):
         if not embedder:
             embedder = OpenAIEmbedder(OpenAISettings())  # type: ignore
         self.embedder = embedder
+        self.val_model = "claude-3-opus-20240229"
 
     def get_modules(self, client: CommuneClient, netuid: int) -> dict[int, str]:
         """Retrieves all module addresses from the subnet.
@@ -203,41 +201,22 @@ class TextValidator(Module):
         module_addreses = client.query_map_address(netuid)
         return module_addreses
 
-    def _enclose_to_prompt(self, criteria: list[tuple[Any]]) -> list[str]:
-        question_list: list[str] = []
-        for criter in criteria:
-            universal_prompt = (
-                "Instructions: Generate unique explanation, matching the following criteria:\n"
-                f"{criter}\n"
-                "Express your thoughts clearly and concisely, crystallizing key points."
-            )
-            question_list.append(universal_prompt)
-
-        return question_list
-
     def _get_validation_dataset(self, settings: ValidatorSettings):
-        ig = InputGenerator()
-        anthropic_client = ig.client
+        claude_settings = AnthropicSettings() # type: ignore
+        claude_settings.temperature = settings.temperature
+        claude_settings.max_tokens = settings.max_tokens
+        claude_settings.model = self.val_model
+        claude = AnthropicModule(claude_settings)
+        ig = InputGenerator(claude)
 
         retrier = retry(4, [Exception])
-        generate_explanations = retrier(ig.prompt_explanation_claude)
+        generate_explanations = retrier(ig.gen_explanation)
 
-        exp = settings.explanations_amount
-        prompt, criteria = explanation_prompt(exp=exp)
+        explanations, prompt, criteria = generate_explanations()
 
-        max_tokens = settings.max_tokens
-        model = settings.model
-        temperature = settings.temperature
-
-        generated = generate_explanations(
-            anthropic_client, prompt, exp, model, max_tokens, temperature
-        )
-        explanations = generated["answer"]["explanations"]
-
-        questions = self._enclose_to_prompt(criteria)
-        dataset: list[tuple[str, str]] = list(zip(questions, explanations))
+        dataset: tuple[str, str] = (prompt, explanations)
         questions_age = time.time()
-        return dataset, questions_age
+        return dataset, criteria, questions_age
 
     async def _get_miner_prediction(self, connection: list[str], question: str):
         module_ip, module_port = connection
@@ -247,36 +226,28 @@ class TextValidator(Module):
 
         client = ModuleClient(module_ip, int(module_port), self.key)
         miner_answer = await client.call("generate", {"prompt": question})
-        miner_answer = json.loads(miner_answer["answer"])["answer"]
-        embedded_miner_answer = self.embedder.get_embedding(miner_answer)
-        return miner_answer, embedded_miner_answer
+        miner_answer = miner_answer['answer']
+        return miner_answer
 
     def _get_unit_euclid_distance(
         self, embedded_miner_answer: list[float], embbeded_val_answer: list[float]
     ):
-        normalized_miner, normalized_val = manhattam_norm(
-            [embedded_miner_answer, embbeded_val_answer]
-        )
-        distance = euclidean_distance(normalized_miner, normalized_val)
-        normalized_distance = distance / sqrt(len(normalized_miner))
+        distance = euclidean_distance(embedded_miner_answer, embbeded_val_answer)
+        miner_norm = np.linalg.norm(embedded_miner_answer)
+        val_norm = np.linalg.norm(embbeded_val_answer)
+        normalized_distance = distance / (miner_norm + val_norm)
         return normalized_distance
 
     async def _score_miner(
-        self, connection: list[str], question: str, embbeded_val_answer: list[float]
+        self, embedded_miner_answer: list[float], embbeded_val_answer: list[float]
     ):
-        try:
-            miner_answer, embedded_miner_answer = await self._get_miner_prediction(
-                connection, question
-            )
-            normalized_distance = self._get_unit_euclid_distance(
-                embedded_miner_answer, embbeded_val_answer
-            )
-            return miner_answer, normalized_distance
+        
+        normalized_distance = self._get_unit_euclid_distance(
+            embedded_miner_answer, embbeded_val_answer
+        )
+        return normalized_distance
 
-        except Exception as e:
-            print(f"caught exception {e} on module {connection}")
-            return None, None
-
+      
     async def validate_step(
         self, settings: ValidatorSettings, syntia_netuid: int
     ) -> None:
@@ -295,6 +266,7 @@ class TextValidator(Module):
         # while True
         modules_adresses = self.get_modules(self.client, syntia_netuid)
         modules_filtered_address = get_ip_port(modules_adresses)
+        response_cache: list[str] = []
         score_dict: dict[int, float] = {}
         wandb_dict: dict[Any, Any] = {}
         # == Validation loop / Scoring ==
@@ -303,17 +275,21 @@ class TextValidator(Module):
         # tuples of questions and answers
 
         while True:
-            dataset_index = 0
-            dataset, _ = self._get_validation_dataset(settings)
-            embedded_val_answers = [
-                self.embedder.get_embedding(tupl[1]) for tupl in dataset
-            ]
+
+            dataset, criteria, _ = self._get_validation_dataset(settings)
+            val_question, val_answer = dataset
+            end_of_subject = val_answer.find("\n")
+            subject = val_answer[:end_of_subject]
+            val_answer = val_answer[end_of_subject + 1 :]
+            miner_prompt = get_miner_prompt(criteria, subject, len(val_answer))
+            embedded_val_answer = self.embedder.get_embedding(val_answer)
             for uid, connection in modules_filtered_address.items():
-                val_question, val_answer = dataset[dataset_index]
-                embedded_val_answer = embedded_val_answers[dataset_index]
-                miner_answer, score = await self._score_miner(
-                    connection, val_question, embedded_val_answer
+                miner_answer = await self._get_miner_prediction(connection, miner_prompt)
+                embedded_miner_answer = self.embedder.get_embedding(miner_answer)
+                score = await self._score_miner(
+                    embedded_miner_answer, embedded_val_answer
                 )
+                breakpoint()
                 print(f"val_questions: {val_question}")
                 print(
                     "----------------------------------------------------------------------"
@@ -330,9 +306,13 @@ class TextValidator(Module):
                 print(
                     "----------------------------------------------------------------------"
                 )
-                print(val_question, val_answer, miner_answer, score)
-                dataset_index = (dataset_index + 1) % len(dataset)
+                for answer in response_cache:
+                    similarity = fuzz.ratio(answer, miner_answer)
+                    print(f"similarity: {similarity}")
+                response_cache.append(miner_answer)
 
+                print(val_question, val_answer, miner_answer, score)
+                time.sleep(1)
                 continue
                 # score has to be lower than 1, as one is the worse score
                 assert score < 1
@@ -345,7 +325,6 @@ class TextValidator(Module):
                 # _ = set_weights(score_dict, self.netuid, self.client, self.key)
 
                 # increase the dataset index, in a way we don't exceed the lenght of the dataset
-                dataset_index = (dataset_index + 1) % len(dataset)
 
         _ = set_weights(score_dict, self.netuid, self.client, self.key)
 
@@ -427,7 +406,10 @@ if __name__ == "__main__":
     # scores = {1: 0, 12: 0.5, 3: 0.8, 4: 0.9, 5: 1}
     # print(set_weights(scores, SYNTHIA_NETUID, validator.client, validator.key))
 
-    print(get_synthia_netuid(validator.client))
+    #print(get_synthia_netuid(validator.client))
+    import asyncio
+
+    x = asyncio.run(validator.validate_step(setting, SYNTHIA_NETUID))
     exit()
     validator.wandb_dict = {}
     validator.init_wandb(ValidatorSettings(), validator.key)  #  type: ignore
@@ -439,6 +421,3 @@ if __name__ == "__main__":
     # print("-------------")
     # modules_filtered_address = get_ip_port(modules)
     # print(modules_filtered_address)
-    import asyncio
-
-    x = asyncio.run(validator.validate_step(setting, SYNTHIA_NETUID))
