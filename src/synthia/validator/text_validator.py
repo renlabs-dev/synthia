@@ -220,13 +220,14 @@ class TextValidator(Module):
 
     async def _get_miner_prediction(self, connection: list[str], question: str):
         module_ip, module_port = connection
-        # for testing
-        module_ip = "127.0.0.1"
-        module_port = "8000"
-
         client = ModuleClient(module_ip, int(module_port), self.key)
-        miner_answer = await client.call("generate", {"prompt": question})
-        miner_answer = miner_answer['answer']
+        try:
+            miner_answer = await client.call("generate", {"prompt": question})
+            miner_answer = miner_answer['answer']
+        except Exception as e:
+            print(f"Miner {module_ip}:{module_port} failed to generate an answer")
+            print(e)
+            miner_answer = None
         return miner_answer
 
     def _get_unit_euclid_distance(
@@ -239,13 +240,15 @@ class TextValidator(Module):
         return normalized_distance
 
     async def _score_miner(
-        self, embedded_miner_answer: list[float], embbeded_val_answer: list[float]
+        self, miner_answer: str | None, embbeded_val_answer: list[float]
     ):
-        
+        if not miner_answer:
+            return 0
+        embedded_miner_answer = self.embedder.get_embedding(miner_answer)
         normalized_distance = self._get_unit_euclid_distance(
             embedded_miner_answer, embbeded_val_answer
         )
-        return normalized_distance
+        return 1 - normalized_distance
 
       
     async def validate_step(
@@ -285,33 +288,15 @@ class TextValidator(Module):
             embedded_val_answer = self.embedder.get_embedding(val_answer)
             for uid, connection in modules_filtered_address.items():
                 miner_answer = await self._get_miner_prediction(connection, miner_prompt)
-                embedded_miner_answer = self.embedder.get_embedding(miner_answer)
                 score = await self._score_miner(
-                    embedded_miner_answer, embedded_val_answer
+                    miner_answer, embedded_val_answer
                 )
                 breakpoint()
-                print(f"val_questions: {val_question}")
-                print(
-                    "----------------------------------------------------------------------"
-                )
-                print(f"val_answer: {val_answer}")
-                print(
-                    "----------------------------------------------------------------------"
-                )
-                print(f"miner_answer: {miner_answer}")
-                print(
-                    "----------------------------------------------------------------------"
-                )
-                print(f"score: {score}")
-                print(
-                    "----------------------------------------------------------------------"
-                )
                 for answer in response_cache:
                     similarity = fuzz.ratio(answer, miner_answer)
                     print(f"similarity: {similarity}")
                 response_cache.append(miner_answer)
 
-                print(val_question, val_answer, miner_answer, score)
                 time.sleep(1)
                 continue
                 # score has to be lower than 1, as one is the worse score
@@ -389,9 +374,9 @@ class TextValidator(Module):
 
 
 if __name__ == "__main__":
-    node_url = "wss://commune.api.onfinality.io/public-ws"
+    node_url = "wss://testnet-commune-api-node-0.communeai.net"
     client = CommuneClient(node_url)
-    SYNTHIA_NETUID = 1  # get_synthia_netuid(client)
+    SYNTHIA_NETUID = get_synthia_netuid(client)
     KEY_MNEMONIC = (
         "electric suffer nephew rough gentle decline fun body tray account vital clinic"
     )
