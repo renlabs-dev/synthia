@@ -3,7 +3,7 @@
 
 Welcome to the Synthia subnet, a bleeding edge initiative to accelerate the open-source AI space. Our mission is to harness the power of Commune's decentralized incentive markets to produce synthetic training data with verified quality at web-scale.
 
-In the rapidly evolving world of artificial intelligence, synthetic data has emerged as a crucial component in the training of advanced models. By utilizing the state-of-the-art Anthropic Claude3 API, we can generate open-ended subject-unconstrained high-quality and diverse synthetic in-depth explanations. While any model or API can theoretically mine in the subnet, the validation is designed exclusively for Claude3-level quality, due to its substantially superior ability to generate the desired synthetic data. Hence we advise mining with the Claude3 API, although support for OpenAI's API is available as well.
+In the rapidly evolving world of artificial intelligence, synthetic data has emerged as a crucial component in the training of advanced models. By utilizing the state-of-the-art Anthropic Claude3 API, we can generate open-ended subject-unconstrained high-quality and diverse synthetic in-depth explanations. While any model or API can theoretically mine in the subnet, the validation is designed to target Claude3-level quality, due to its substantially superior ability to generate the desired synthetic data. Hence we advise mining with the Claude3 API, although support for OpenAI's API is available.
 
 Major AI labs have already recognized the potential of synthetic data and are actively utilizing it to enhance their models. However, access to such data remains limited for the broader open-source community. The Synthia subnet aims to change that.
 
