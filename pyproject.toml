@@ -24,6 +24,8 @@ numpy = "^1.26.4"
 transformers = "^4.39.1"
 tensorflow = "^2.16.1"
 tf-keras = "^2.16.0"
+fuzzywuzzy = "^0.18.0"
+python-levenshtein = "^0.25.0"
 
 
 [tool.poetry.group.dev]
