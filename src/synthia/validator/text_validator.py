@@ -5,14 +5,10 @@ This class represents a validator module that runs on the Synthia subnet. It ini
 """
 
 import re
-from typing import cast, Any, Sequence
+from typing import cast, Any
 import time
 import os
 import json
-2
-
-# once we register the synthia subnet, we will update this value
-
 
 import numpy as np
 import wandb
@@ -25,47 +21,14 @@ from communex.compat.types import Ss58Address  # type: ignore
 import asyncio
 from fuzzywuzzy import fuzz
 
-
-
 from ._config import ValidatorSettings
-from .generate_data import InputGenerator, explanation_prompt
+from .generate_data import InputGenerator
 from ..utils import retry
 from .similarity import OpenAIEmbedder, OpenAISettings, euclidean_distance, Embedder
 from ..miner._config import AnthropicSettings
 from ..miner.anthropic import AnthropicModule
 from .meta_prompt import get_miner_prompt
 
-
-def score(val_answer: str, miner_answer: str) -> float:
-    import random
-
-    return float(random.randint(0, 1))
-
-
-# TODO:
-# Jairo
-# - [x] implement retry mechanism on question answer generation
-# - [x] make sure miner instructions are the same as answer generation of validator. WIth the same system instructions and tempreature
-# - [ ]implement the main validation loop -> get question, get answer, loop through miners, ...  (without validation that is done by kelvin)
-# after scoring set weights
-#  [x] - query the `SYNTHIA_NETUID` dynamically from the chain name of the subnet
-
-# 3/26 TODO:
-# - [x] Make sure to send one question at a time to miner, if we run out of questions,
-# iterate through the question list again
-# - [ ] Generate new data every `settins.generation_interval`
-# (this tells us: after N iterations are finish, generate new data)
-# - [ ] make the validation loop run every `settings.iteration_interval` which is defined in seconds (basically time sleep)
-
-# Honza
-# - [ ] focus only on claude in the validation
-# - [x] figure out a better prompt
-# - [x] save the interaction between a validator and miner to a db
-# - [ ] test wandb saving
-# - [x] implement set_weights funciton
-
-# Kelvin
-# -[ ] Implement scoring function based on vector difference using embedings
 
 # TODO: make it match ipv6
 IP_REGEX = re.compile(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d+")
@@ -88,12 +51,12 @@ def set_weights(
     weighted_scores: dict[int, int] = {}
 
     # Calculate the sum of all inverted scores
-    total_inverted_score = sum(1 - score for score in score_dict.values())
+    scores = sum(score_dict.values())
 
     # Iterate over the items in the score_dict
     for uid, score in score_dict.items():
         # Calculate the normalized weight as an integer
-        weight = int((1 - score) / total_inverted_score * 100)
+        weight = int(score / scores * 100)
 
         # Add the weighted score to the new dictionary
         weighted_scores[uid] = weight
@@ -103,9 +66,7 @@ def set_weights(
 
     uids = list(weighted_scores.keys())
     weights = list(weighted_scores.values())
-
-    # client.vote(key=key, uids=uids, weights=weights, netuid=netuid)
-    return  # delete this line in the future
+    client.vote(key=key, uids=uids, weights=weights, netuid=netuid)
 
 
 def extract_address(string: str):
@@ -237,11 +198,11 @@ class TextValidator(Module):
         miner_norm = np.linalg.norm(embedded_miner_answer)
         val_norm = np.linalg.norm(embbeded_val_answer)
         normalized_distance = distance / (miner_norm + val_norm)
-        return normalized_distance
+        return float(normalized_distance) # i hate python's type system
 
     async def _score_miner(
         self, miner_answer: str | None, embbeded_val_answer: list[float]
-    ):
+    ) -> float:
         if not miner_answer:
             return 0
         embedded_miner_answer = self.embedder.get_embedding(miner_answer)
@@ -253,7 +214,7 @@ class TextValidator(Module):
       
     async def validate_step(
         self, settings: ValidatorSettings, syntia_netuid: int
-    ) -> None:
+    ):
         """Performs a validation step.
 
         Generates questions based on the provided settings, prompts modules to
@@ -264,54 +225,47 @@ class TextValidator(Module):
             settings: The validator settings to use for this validation step.
             syntia_netuid: The netuid of the Synthia subnet.
         """
-        # create the question : answer generator
 
-        # while True
         modules_adresses = self.get_modules(self.client, syntia_netuid)
         modules_filtered_address = get_ip_port(modules_adresses)
         response_cache: list[str] = []
         score_dict: dict[int, float] = {}
-        wandb_dict: dict[Any, Any] = {}
+        wandb_dict: dict[str, str] = {}
         # == Validation loop / Scoring ==
-        # TODO: refactor passed questions, answers
 
-        # tuples of questions and answers
-
-        while True:
-
-            dataset, criteria, _ = self._get_validation_dataset(settings)
-            val_question, val_answer = dataset
-            end_of_subject = val_answer.find("\n")
-            subject = val_answer[:end_of_subject]
-            val_answer = val_answer[end_of_subject + 1 :]
-            miner_prompt = get_miner_prompt(criteria, subject, len(val_answer))
-            embedded_val_answer = self.embedder.get_embedding(val_answer)
-            for uid, connection in modules_filtered_address.items():
-                miner_answer = await self._get_miner_prediction(connection, miner_prompt)
-                score = await self._score_miner(
-                    miner_answer, embedded_val_answer
-                )
-                breakpoint()
-                for answer in response_cache:
-                    similarity = fuzz.ratio(answer, miner_answer)
-                    print(f"similarity: {similarity}")
-                response_cache.append(miner_answer)
-
-                time.sleep(1)
+        dataset, criteria, _ = self._get_validation_dataset(settings)
+        val_prompt, val_answer = dataset
+        end_of_subject = val_answer.find("\n")
+        subject = val_answer[:end_of_subject]
+        val_answer = val_answer[end_of_subject + 1 :]
+        miner_prompt = get_miner_prompt(criteria, subject, len(val_answer))
+        embedded_val_answer = self.embedder.get_embedding(val_answer)
+        
+        for uid, connection in modules_filtered_address.items():
+            miner_answer = await self._get_miner_prediction(connection, miner_prompt)
+            if not miner_answer:
                 continue
-                # score has to be lower than 1, as one is the worse score
-                assert score < 1
-                score_dict[uid] = score
+            
+            score = await self._score_miner(
+                miner_answer, embedded_val_answer
+            )
+            for answer in response_cache:
+                similarity = fuzz.ratio(answer, miner_answer) # type: ignore
+                print(f"similarity: {similarity}")
+            response_cache.append(miner_answer)
 
-                wandb_dict["question"] = val_question
-                wandb_dict["validator_answer"] = val_answer
-                wandb_dict[f"miner_answer_{uid}"] = miner_answer
+            time.sleep(0.5)
+            # score has to be lower than 1, as one is the worse score
+            assert score < 1
+            score_dict[uid] = score
 
-                # _ = set_weights(score_dict, self.netuid, self.client, self.key)
-
-                # increase the dataset index, in a way we don't exceed the lenght of the dataset
-
+            wandb_dict["prompt"] = val_prompt
+            wandb_dict["validator_answer"] = val_answer
+            wandb_dict[f"miner_answer_{uid}"] = miner_answer
+            
         _ = set_weights(score_dict, self.netuid, self.client, self.key)
+        
+        return wandb_dict
 
     # TODO :
     # - Migrate from wandb to decentralized database, possibly ipfs, the server
@@ -354,7 +308,7 @@ class TextValidator(Module):
 
         return run
 
-    def main(self, settings: ValidatorSettings | None = None) -> None:
+    def validation_loop(self, settings: ValidatorSettings | None = None) -> None:
         if not settings:
             settings = ValidatorSettings()  # type: ignore
 
@@ -364,19 +318,25 @@ class TextValidator(Module):
         else:
             run = None
 
+        self.wandb_dict: dict[str, str] = {}  # Initialize wandb_dict as an empty dictionary
         # Run validation
-        self.wandb_dict = {}  # Initialize wandb_dict as an empty dictionary
-        asyncio.run(self.validate_step(settings, self.netuid))
-
-        if run:
-            run.log(self.wandb_dict)  # type: ignore
-            run.finish()  # type: ignore
+        while True:
+            start_time = time.time()
+            wandb = asyncio.run(self.validate_step(settings, self.netuid))
+            self.wandb_dict.update(wandb)
+            if run:
+                run.log(self.wandb_dict)  # type: ignore
+                run.finish()  # type: ignore
+            elapsed = time.time() - start_time
+            if elapsed < settings.iteration_interval:
+                time.sleep(settings.iteration_interval - elapsed)
 
 
 if __name__ == "__main__":
     node_url = "wss://testnet-commune-api-node-0.communeai.net"
     client = CommuneClient(node_url)
     SYNTHIA_NETUID = get_synthia_netuid(client)
+    print(f"SYNTHIA_NETUID: {SYNTHIA_NETUID}")
     KEY_MNEMONIC = (
         "electric suffer nephew rough gentle decline fun body tray account vital clinic"
     )
@@ -384,25 +344,4 @@ if __name__ == "__main__":
         Keypair.create_from_mnemonic(KEY_MNEMONIC), SYNTHIA_NETUID, client
     )
     setting = ValidatorSettings()  # type: ignore
-
-    # validator.wandb_dict = {}
-    # validator.init_wandb(ValidatorSettings(), validator.key)  #  type: ignore
-    # exit()
-    # scores = {1: 0, 12: 0.5, 3: 0.8, 4: 0.9, 5: 1}
-    # print(set_weights(scores, SYNTHIA_NETUID, validator.client, validator.key))
-
-    #print(get_synthia_netuid(validator.client))
-    import asyncio
-
-    x = asyncio.run(validator.validate_step(setting, SYNTHIA_NETUID))
-    exit()
-    validator.wandb_dict = {}
-    validator.init_wandb(ValidatorSettings(), validator.key)  #  type: ignore
-    scores = {1: 0, 12: 0.5, 3: 0.8, 4: 0.9, 5: 1}
-    print(set_weights(scores, SYNTHIA_NETUID, validator.client, validator.key))
-
-    # modules = validator.get_modules(validator.client, validator.get_synthia_netuid())
-    # print(modules)
-    # print("-------------")
-    # modules_filtered_address = get_ip_port(modules)
-    # print(modules_filtered_address)
+    validator.validation_loop(setting)
