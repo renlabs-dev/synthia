@@ -8,7 +8,6 @@ class ValidatorSettings(BaseSettings):
     model: str = "claude-3-opus-20240229"
     temperature: float = 0.2
     max_tokens: int = 1000
-    explanations_amount: int = 5 # do not go above 5
 
     # == Wandb ==
     use_wandb: bool = False
