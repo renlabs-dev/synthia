@@ -11,11 +11,11 @@ from transformers import pipeline, Pipeline  # type: ignore
 
 from ..utils import timeit
 
+
 def _do_debug():
     from IPython import embed  # type: ignore
 
     embed()
-
 
 
 examples = [
@@ -78,12 +78,11 @@ class OpenAIEmbedder(Embedder):
         self, openai_settings: OpenAISettings, model: str = "text-embedding-3-small"
     ):
         self.openai_settings = openai_settings
+        self.model = model
         self.client = openai.OpenAI(api_key=self.openai_settings.api_key)
-    
+
     def get_embedding(self, input: str):
-        response = self.client.embeddings.create(
-            model="text-embedding-3-small", input=input
-        )
+        response = self.client.embeddings.create(model=self.model, input=input)
         embedding = response.data[0].embedding
         return embedding
 
