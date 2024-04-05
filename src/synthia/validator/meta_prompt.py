@@ -834,7 +834,7 @@ def get_topics() -> list[str]:
         "pattern recognition",
         "Data for good",
         "Koro syndrome",
-        "data privacy",
+        "data privacy", 
         "cybersecurity",
         "AI for well-being",
         "Neuroprosthetics",
@@ -1397,11 +1397,11 @@ def explanation_prompt() -> tuple[str, Criteria]:
     )
 
     prompt = (
-        f"Pick a specific subject in {subject_types} with a {specificity} level of esotericity in the field of {topics}," 
-        "you consider interesting and provide a insightful semantically dense explanation," 
-        f"targetting a {target_audiences}." 
-        "Your goal is their comprehension of the explanation, according to their background expertise." 
-        f"Follow a {abstraction} abstraction level and a {detail} level of detail." 
+        f"Pick a specific subject in {subject_types} with a {specificity} level of esotericity in the field of {topics}, " 
+        "you consider interesting and provide a insightful semantically dense explanation, " 
+        f"targetting a {target_audiences}. " 
+        "Your goal is their comprehension of the explanation, according to their background expertise. " 
+        f"Follow a {abstraction} abstraction level and a {detail} level of detail. " 
         "Start by titling the subject you've picked in quotation marks."
     )
 
@@ -1411,11 +1411,11 @@ def explanation_prompt() -> tuple[str, Criteria]:
 
 def get_miner_prompt(criteria: Criteria, sample_subject: str, sample_length: int):
     prompt = (
-        f"You are a top expert in the field of {criteria.topic} with deep knowledge on" 
-        f"the subject {[sample_subject]}. Provide an insightful semantically dense" 
-        f"explanation of the {[sample_subject]} that will be read by a {[criteria.target_audience]}." 
-        "Your goal is their comprehension of the explanation, according to their" 
-        f"background expertise. Follow a {[criteria.abstraction]} level of abstraction and a {[criteria.detail]}" 
+        f"You are a top expert in the field of {criteria.topic} with deep knowledge on " 
+        f"the subject {[sample_subject]}. Provide an insightful semantically dense " 
+        f"explanation of the {[sample_subject]} that will be read by a {[criteria.target_audience]}. " 
+        "Your goal is their comprehension of the explanation, according to their " 
+        f"background expertise. Follow a {[criteria.abstraction]} level of abstraction and a {[criteria.detail]} " 
         f"level of detail. Target a length of approximately [{sample_length}] words."
     )
     return prompt

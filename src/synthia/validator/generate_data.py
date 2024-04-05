@@ -4,6 +4,7 @@ from typing import cast, Any
 from .meta_prompt import explanation_prompt
 from ..miner.BaseLLM import BaseLLM
 
+
 class InputGenerator:
     def __init__(self, llm: BaseLLM) -> None:
         self.llm = llm
@@ -12,27 +13,26 @@ class InputGenerator:
         self,
     ):
         system_prompt = (
-            "You are a supreme polymath renowned for your ability to explain"
-            "complex concepts effectively to any audience from laypeople"
+            "You are a supreme polymath renowned for your ability to explain "
+            "complex concepts effectively to any audience from laypeople "
             "to fellow top experts. "
-            "By principle, you always ensure factual accuracy."
-            "You are master at adapting your explanation strategy as needed" 
-            "based on the topic and target audience, using a wide array of"
-            "tools such as examples, analogies and metaphors whenever and"
-            "only when appropriate. Your goal is their comprehension of the"
-            "explanation, according to their background expertise."
-            "You always structure your explanations coherently and express"
-            "yourself clear and concisely, crystallizing thoughts and"
-            "key concepts. You only respond with the explanations themselves," 
-            "eliminating redundant conversational additions."
+            "By principle, you always ensure factual accuracy. "
+            "You are master at adapting your explanation strategy as needed "
+            "based on the topic and target audience, using a wide array of "
+            "tools such as examples, analogies and metaphors whenever and "
+            "only when appropriate. Your goal is their comprehension of the "
+            "explanation, according to their background expertise. "
+            "You always structure your explanations coherently and express "
+            "yourself clear and concisely, crystallizing thoughts and "
+            "key concepts. You only respond with the explanations themselves, "
+            "eliminating redundant conversational additions. "
             f"Try to keep your answer below {self.llm.max_tokens} tokens"
-            )
+        )
 
         user_prompt, criteria = explanation_prompt()
         val_answer = self.llm.prompt(
-            user_prompt=user_prompt, 
-            system_prompt=system_prompt
-            )
+            user_prompt=user_prompt, system_prompt=system_prompt
+        )
         match val_answer:
             case None, explanation:
                 raise RuntimeError(f"Failed to generate explanation: {explanation}")
