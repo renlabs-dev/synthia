@@ -1,3 +1,4 @@
 {
-    "workbench.iconTheme": "developer-icon-theme"
+    "workbench.iconTheme": "developer-icon-theme",
+    "python.analysis.typeCheckingMode": "strict"
 }

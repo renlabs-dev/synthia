@@ -1,37 +1,27 @@
-"""
-Module for validating text submissions on the Synthia subnet.
-
-This class represents a validator module that runs on the Synthia subnet. It initializes a Wandb run to log validation data, and provides functions to retrieve metadata about the subnet and modules.
-"""
-
-import re
-from typing import cast, Any
-import time
-import os
-import json
-from functools import partial
+import asyncio
 import concurrent.futures
-
+import json
+import re
+import time
+from functools import partial
 
 import numpy as np
-import wandb
-from communex.module.module import Module  # type: ignore
+import requests
 from communex.client import CommuneClient  # type: ignore
-from substrateinterface import Keypair  # type: ignore
+from communex.compat.types import Ss58Address  # type: ignore
 from communex.module._signer import sign  # type: ignore
 from communex.module.client import ModuleClient  # type: ignore
-from communex.compat.types import Ss58Address  # type: ignore
-import asyncio
-from fuzzywuzzy import fuzz
+from communex.module.module import Module  # type: ignore
+from fuzzywuzzy import fuzz  # type: ignore
+from substrateinterface import Keypair  # type: ignore
 
-from ._config import ValidatorSettings
-from .generate_data import InputGenerator
-from ..utils import retry
-from .similarity import OpenAIEmbedder, OpenAISettings, euclidean_distance, Embedder
 from ..miner._config import AnthropicSettings
 from ..miner.anthropic import AnthropicModule
+from ..utils import retry
+from ._config import ValidatorSettings
+from .generate_data import InputGenerator
 from .meta_prompt import get_miner_prompt
-
+from .similarity import Embedder, OpenAIEmbedder, OpenAISettings, euclidean_distance
 
 # TODO: make it match ipv6
 IP_REGEX = re.compile(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d+")
@@ -166,7 +156,7 @@ class TextValidator(Module):
         return module_addreses
 
     def _get_validation_dataset(self, settings: ValidatorSettings):
-        claude_settings = AnthropicSettings() # type: ignore
+        claude_settings = AnthropicSettings()  # type: ignore
         claude_settings.temperature = settings.temperature
         claude_settings.max_tokens = settings.max_tokens
         claude_settings.model = self.val_model
@@ -182,16 +172,12 @@ class TextValidator(Module):
         questions_age = time.time()
         return dataset, criteria, questions_age
 
-    def _get_miner_prediction(
-            self, 
-            connection: list[str], 
-            question: str
-        ) -> str | None:
+    def _get_miner_prediction(self, connection: list[str], question: str) -> str | None:
         module_ip, module_port = connection
         client = ModuleClient(module_ip, int(module_port), self.key)
         try:
             miner_answer = asyncio.run(client.call("generate", {"prompt": question}))
-            miner_answer = miner_answer['answer']
+            miner_answer = miner_answer["answer"]
         except Exception as e:
             print(f"Miner {module_ip}:{module_port} failed to generate an answer")
             print(e)
@@ -205,7 +191,7 @@ class TextValidator(Module):
         miner_norm = np.linalg.norm(embedded_miner_answer)
         val_norm = np.linalg.norm(embbeded_val_answer)
         normalized_distance = distance / (miner_norm + val_norm)
-        return float(normalized_distance) # i hate python's type system
+        return float(normalized_distance)  # i hate python's type system
 
     def _score_miner(
         self, miner_answer: str | None, embbeded_val_answer: list[float]
@@ -227,12 +213,10 @@ class TextValidator(Module):
     def _test_score(self, text_a: str, text_b: str):
         embbeded_a = self.embedder.get_embedding(text_a)
         score = self._score_miner(text_b, embbeded_a)
-        sim = fuzz.ratio(text_a, text_b)
+        sim = fuzz.ratio(text_a, text_b)  # type: ignore
         print(f"Score: {score}, similarity: {sim}")
 
-    async def validate_step(
-        self, settings: ValidatorSettings, syntia_netuid: int
-    ):
+    async def validate_step(self, settings: ValidatorSettings, syntia_netuid: int):
         """Performs a validation step.
 
         Generates questions based on the provided settings, prompts modules to
@@ -248,27 +232,27 @@ class TextValidator(Module):
         modules_filtered_address = get_ip_port(modules_adresses)
         response_cache: list[str] = []
         score_dict: dict[int, float] = {}
-        wandb_dict: dict[str, str] = {}
+        hf_data: dict[str, str] = {}
         # == Validation loop / Scoring ==
 
         dataset, criteria, _ = self._get_validation_dataset(settings)
-        val_prompt, val_answer = dataset
+        _, val_answer = dataset
         subject, val_answer = self._split_val_subject(val_answer)
         miner_prompt = get_miner_prompt(criteria, subject, len(val_answer))
         embedded_val_answer = self.embedder.get_embedding(val_answer)
-        
-        get_miner_prediction = partial(self._get_miner_prediction, question=miner_prompt)
+
+        get_miner_prediction = partial(
+            self._get_miner_prediction, question=miner_prompt
+        )
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             it = executor.map(get_miner_prediction, modules_filtered_address.values())
             miner_answers = [*it]
         for uid, miner_answer in zip(modules_filtered_address.keys(), miner_answers):
             if not miner_answer:
                 continue
-            score = self._score_miner(
-                miner_answer, embedded_val_answer
-            )
+            score = self._score_miner(miner_answer, embedded_val_answer)
             for answer in response_cache:
-                similarity = fuzz.ratio(answer, miner_answer) # type: ignore
+                similarity = fuzz.ratio(answer, miner_answer)  # type: ignore
                 print(f"similarity: {similarity}")
             response_cache.append(miner_answer)
 
@@ -276,74 +260,59 @@ class TextValidator(Module):
             # score has to be lower than 1, as one is the best score
             assert score < 1
             score_dict[uid] = score
-            wandb_dict["prompt"] = val_prompt
-            wandb_dict["validator_answer"] = val_answer
-            wandb_dict[f"miner_answer_{uid}"] = miner_answer
-            
+
+            # update the dict with the new data
+            hf_data["field"] = criteria.topic
+            hf_data["subject"] = subject
+            hf_data["target"] = criteria.target_audience
+            hf_data["detail"] = criteria.detail
+            hf_data["abstraction"] = criteria.abstraction
+            hf_data[f"explanation"] = miner_answer
+            hf_data["score"] = str(score)
+
         _ = set_weights(score_dict, self.netuid, self.client, self.key)
-        
-        return wandb_dict
 
-    def init_wandb(self, settings: ValidatorSettings, keypair: Keypair) -> Any:
-        # TODO :
-        # - Migrate from wandb to decentralized database, possibly ipfs, the server
-        # has to check for the signature of the data. (This way is used even on S18, but we don't like it)
-        # key = cast(Ss58Address, keypair.ss58_address)
+        return hf_data
 
-        uid = 0  # ! place holder, take this out in prod
-        # uid = self.client.get_uids(key=key)
-        # # Make sure key is registered on the network
-        # assert uid is not None, "Key is not registered on the network"
+    def upload_data(self, data: dict[str, str]) -> None:
+        """Uploads the validation data.
 
-        run_name = f"validator-{uid}"
-        settings.run_name = run_name
-        settings.uid = uid
-        settings.key = cast(Ss58Address, keypair.ss58_address)
-        settings.timestamp = time.time()
-        # convert settings to dict
-        config_dict = settings.model_dump()
+        Args:
+            data: A dictionary containing the validation data to upload.
+        """
 
-        # sign the config, to make sure the validator is registered on our netuid
-        signature = sign(keypair, json.dumps(config_dict).encode("utf-8"))
+        # add a timestamp
+        data["timestamp"] = str(time.time())
 
-        # convert the signature to a hexadecimal string
-        signature_hex = signature.hex()
+        bytes_db = json.dumps(data).encode("utf-8")
+        signature = sign(self.key, bytes_db)
 
-        # add the signature to the config_dict
-        config_dict["signature"] = signature_hex
+        # sign the whole thing, so we make sure valid node is uploading
+        data["signature"] = signature.hex()
 
-        # Avoid saving locally
-        os.environ["WANDB_MODE"] = "online"
+        # now upload the data
+        max_attempts = 3
+        attempt = 1
 
-        run = wandb.init(  # type: ignore
-            name=run_name,
-            project=settings.project_name,
-            entity="synthia-subnet",
-            config=config_dict,  # Pass config_dict directly, not config
-            reinit=True,
-        )
-
-        return run
+        while attempt <= max_attempts:
+            try:
+                response = requests.post("https://synthiasubnet.com/upload/", json=data)
+                response.raise_for_status()  # Raise an exception for 4xx or 5xx status codes
+                break
+            except requests.exceptions.RequestException as e:
+                print(f"Upload attempt {attempt} failed: {e}")
+                attempt += 1
 
     def validation_loop(self, settings: ValidatorSettings | None = None) -> None:
         if not settings:
             settings = ValidatorSettings()  # type: ignore
 
-        # Storage
-        if settings.use_wandb:
-            run = self.init_wandb(settings, self.key)
-        else:
-            run = None
-
-        self.wandb_dict: dict[str, str] = {}  # Initialize wandb_dict as an empty dictionary
         # Run validation
         while True:
             start_time = time.time()
-            wandb = asyncio.run(self.validate_step(settings, self.netuid))
-            self.wandb_dict.update(wandb)
-            if run:
-                run.log(self.wandb_dict)  # type: ignore
-                run.finish()  # type: ignore
+            db = asyncio.run(self.validate_step(settings, self.netuid))
+            self.upload_data(db)
+
             elapsed = time.time() - start_time
             if elapsed < settings.iteration_interval:
                 time.sleep(settings.iteration_interval - elapsed)
@@ -380,12 +349,12 @@ if __name__ == "__main__":
     #     "SHOULD BE SIMILAR"
     # ),
     # (
-    #     "Commune will surpass Bitcoin", 
+    #     "Commune will surpass Bitcoin",
     #     "Commune will be worth more than Bitcoin",
     #     "SHOULD BE SIMILAR"
     # ),
     # (
-    #     "Im testing this", 
+    #     "Im testing this",
     #     "You have to be very high IQ to understand ricky and morty",
     #     "SHOULDN'T BE SIMILAR"
     # ),

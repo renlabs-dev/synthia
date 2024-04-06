@@ -9,16 +9,6 @@ class ValidatorSettings(BaseSettings):
     temperature: float = 0.2
     max_tokens: int = 1000
 
-    # == Wandb ==
-    use_wandb: bool = False
-    project_name: str = "synthia"
-    type: str = "validator"
-    # run settings
-    uid: int | None = None
-    key: Ss58Address | None = None
-    run_name: str | None = None
-    timestamp: float | None = None
-
     # == Scoring ==
     # sleep time between each iteration
     iteration_interval: int = 1200

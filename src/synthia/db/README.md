@@ -1,1 +1,0 @@
-This code is run by the subnet owner to prevent unwanted write acess to the database
