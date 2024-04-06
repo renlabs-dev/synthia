@@ -2,5 +2,6 @@
 /env/**/*.env
 .ipynb_checkpoints
 /wandb
+src/synthia/db/data
 /.tests
 __pycache__
