@@ -9,6 +9,9 @@ from typing import cast, Any
 import time
 import os
 import json
+from functools import partial
+import concurrent.futures
+
 
 import numpy as np
 import wandb
@@ -179,11 +182,15 @@ class TextValidator(Module):
         questions_age = time.time()
         return dataset, criteria, questions_age
 
-    async def _get_miner_prediction(self, connection: list[str], question: str):
+    def _get_miner_prediction(
+            self, 
+            connection: list[str], 
+            question: str
+        ) -> str | None:
         module_ip, module_port = connection
         client = ModuleClient(module_ip, int(module_port), self.key)
         try:
-            miner_answer = await client.call("generate", {"prompt": question})
+            miner_answer = asyncio.run(client.call("generate", {"prompt": question}))
             miner_answer = miner_answer['answer']
         except Exception as e:
             print(f"Miner {module_ip}:{module_port} failed to generate an answer")
@@ -200,7 +207,7 @@ class TextValidator(Module):
         normalized_distance = distance / (miner_norm + val_norm)
         return float(normalized_distance) # i hate python's type system
 
-    async def _score_miner(
+    def _score_miner(
         self, miner_answer: str | None, embbeded_val_answer: list[float]
     ) -> float:
         if not miner_answer:
@@ -211,7 +218,18 @@ class TextValidator(Module):
         )
         return 1 - normalized_distance
 
-      
+    def _split_val_subject(self, val_answer: str):
+        end_of_subject = val_answer.find("\n")
+        subject = val_answer[:end_of_subject]
+        val_answer = val_answer[end_of_subject + 1 :]
+        return subject, val_answer
+
+    def _test_score(self, text_a: str, text_b: str):
+        embbeded_a = self.embedder.get_embedding(text_a)
+        score = self._score_miner(text_b, embbeded_a)
+        sim = fuzz.ratio(text_a, text_b)
+        print(f"Score: {score}, similarity: {sim}")
+
     async def validate_step(
         self, settings: ValidatorSettings, syntia_netuid: int
     ):
@@ -235,18 +253,18 @@ class TextValidator(Module):
 
         dataset, criteria, _ = self._get_validation_dataset(settings)
         val_prompt, val_answer = dataset
-        end_of_subject = val_answer.find("\n")
-        subject = val_answer[:end_of_subject]
-        val_answer = val_answer[end_of_subject + 1 :]
+        subject, val_answer = self._split_val_subject(val_answer)
         miner_prompt = get_miner_prompt(criteria, subject, len(val_answer))
         embedded_val_answer = self.embedder.get_embedding(val_answer)
         
-        for uid, connection in modules_filtered_address.items():
-            miner_answer = await self._get_miner_prediction(connection, miner_prompt)
+        get_miner_prediction = partial(self._get_miner_prediction, question=miner_prompt)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            it = executor.map(get_miner_prediction, modules_filtered_address.values())
+            miner_answers = [*it]
+        for uid, miner_answer in zip(modules_filtered_address.keys(), miner_answers):
             if not miner_answer:
                 continue
-            
-            score = await self._score_miner(
+            score = self._score_miner(
                 miner_answer, embedded_val_answer
             )
             for answer in response_cache:
@@ -255,10 +273,9 @@ class TextValidator(Module):
             response_cache.append(miner_answer)
 
             time.sleep(0.5)
-            # score has to be lower than 1, as one is the worse score
+            # score has to be lower than 1, as one is the best score
             assert score < 1
             score_dict[uid] = score
-
             wandb_dict["prompt"] = val_prompt
             wandb_dict["validator_answer"] = val_answer
             wandb_dict[f"miner_answer_{uid}"] = miner_answer
@@ -267,10 +284,10 @@ class TextValidator(Module):
         
         return wandb_dict
 
-    # TODO :
-    # - Migrate from wandb to decentralized database, possibly ipfs, the server
-    # has to check for the signature of the data. (This way is used even on S18, but we don't like it)
     def init_wandb(self, settings: ValidatorSettings, keypair: Keypair) -> Any:
+        # TODO :
+        # - Migrate from wandb to decentralized database, possibly ipfs, the server
+        # has to check for the signature of the data. (This way is used even on S18, but we don't like it)
         # key = cast(Ss58Address, keypair.ss58_address)
 
         uid = 0  # ! place holder, take this out in prod
@@ -345,3 +362,45 @@ if __name__ == "__main__":
     )
     setting = ValidatorSettings()  # type: ignore
     validator.validation_loop(setting)
+    # examples = [
+
+    # (
+    #     "It's not true at all that Bob understands the embeddings.",
+    #     "The embeddings are not comprehended by Bob.",
+    #     "SHOULD BE SIMILAR"
+    # ),
+    # (
+    #     "It's not true at all that Bob understands the embeddings.",
+    #     "Bob doesn't comprehend the embeddings very well, but it's enough.",
+    #     "SHOULDN'T BE VERY SIMILAR"
+    # ),
+    # (
+    #     "James was not right about Bob",
+    #     "James did a wrong assessment of Bob's understanding",
+    #     "SHOULD BE SIMILAR"
+    # ),
+    # (
+    #     "Commune will surpass Bitcoin", 
+    #     "Commune will be worth more than Bitcoin",
+    #     "SHOULD BE SIMILAR"
+    # ),
+    # (
+    #     "Im testing this", 
+    #     "You have to be very high IQ to understand ricky and morty",
+    #     "SHOULDN'T BE SIMILAR"
+    # ),
+    # (
+    #     "I would like to know why the distance decreases when the context changes",
+    #     "Why does the distance decreases with context changes?",
+    #     "SHOULD BE SIMILAR",
+    # ),
+    # (
+    #     "I would like to know why the distance decreases when the context changes",
+    #     "Why does the distance increases with context changes?",
+    #     "SHOULDN'T BE SIMILAR",
+    # ),
+    # ]
+    # for a, b, c in examples:
+    #     validator._test_score(a, b)
+    #     print(c)
+    #     print("----------------------")
