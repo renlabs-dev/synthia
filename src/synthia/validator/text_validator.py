@@ -263,7 +263,7 @@ class TextValidator(Module):
             score_dict[uid] = score
 
             # update the dict with the new data
-            hf_data["field"] = criteria.topic
+            hf_data["field"] = criteria.field
             hf_data["subject"] = subject
             hf_data["target"] = criteria.target_audience
             hf_data["detail"] = criteria.detail
