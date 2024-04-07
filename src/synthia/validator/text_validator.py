@@ -1,6 +1,5 @@
 import asyncio
 import concurrent.futures
-import json
 import re
 import time
 from functools import partial
@@ -11,6 +10,7 @@ from communex.client import CommuneClient  # type: ignore
 from communex.compat.types import Ss58Address  # type: ignore
 from communex.module._signer import sign  # type: ignore
 from communex.module.client import ModuleClient  # type: ignore
+from communex.module.client import iso_timestamp_now, serialize  # type: ignore
 from communex.module.module import Module  # type: ignore
 from fuzzywuzzy import fuzz  # type: ignore
 from substrateinterface import Keypair  # type: ignore
@@ -21,7 +21,8 @@ from ..utils import retry
 from ._config import ValidatorSettings
 from .generate_data import InputGenerator
 from .meta_prompt import get_miner_prompt
-from .similarity import Embedder, OpenAIEmbedder, OpenAISettings, euclidean_distance
+from .similarity import (Embedder, OpenAIEmbedder, OpenAISettings,
+                         euclidean_distance)
 
 # TODO: make it match ipv6
 IP_REGEX = re.compile(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d+")
@@ -257,8 +258,8 @@ class TextValidator(Module):
             response_cache.append(miner_answer)
 
             time.sleep(0.5)
-            # score has to be lower than 1, as one is the best score
-            assert score < 1
+            # score has to be lower or eq to 1, as one is the best score
+            assert score <= 1
             score_dict[uid] = score
 
             # update the dict with the new data
@@ -282,13 +283,16 @@ class TextValidator(Module):
         """
 
         # add a timestamp
-        data["timestamp"] = str(time.time())
+        data["Timestamp"] = iso_timestamp_now()
 
-        bytes_db = json.dumps(data).encode("utf-8")
-        signature = sign(self.key, bytes_db)
+        serealized_data = serialize(data)
+       
+        signature = sign(self.key, serealized_data)
 
         # sign the whole thing, so we make sure valid node is uploading
-        data["signature"] = signature.hex()
+        data["Signature"] = signature.hex()
+        data["Key"] = self.key.public_key.hex()
+        data["Crypto"] = str(self.key.crypto_type)
 
         # now upload the data
         max_attempts = 3
