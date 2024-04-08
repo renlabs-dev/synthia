@@ -12,13 +12,9 @@ python-dotenv = "^1.0.1"
 pydantic-settings = "^2.2.1"
 anthropic = "^0.21.3"
 openai = "^1.14.2"
-<<<<<<< Updated upstream
-communex = "^0.1.6"
-=======
 wandb = "^0.16.4"
 communex = "^0.1.9"
 #communex = {path = "../communex"}
->>>>>>> Stashed changes
 polars = "^0.20.16"
 polars-distance = "^0.4.2"
 gensim = "^4.3.2"

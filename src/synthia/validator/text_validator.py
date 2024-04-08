@@ -3,6 +3,7 @@ import concurrent.futures
 import re
 import time
 from functools import partial
+from os import getenv
 
 import numpy as np
 import requests
@@ -26,7 +27,8 @@ from .similarity import (Embedder, OpenAIEmbedder, OpenAISettings,
 
 # TODO: make it match ipv6
 IP_REGEX = re.compile(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d+")
-
+PK = getenv("SERVER_PK")
+assert PK
 
 def set_weights(
     score_dict: dict[int, float], netuid: int, client: CommuneClient, key: Keypair
@@ -283,21 +285,21 @@ class TextValidator(Module):
         """
 
         # add a timestamp
-        data["Timestamp"] = iso_timestamp_now()
+        #data["Timestamp"] = iso_timestamp_now()
 
-        serealized_data = serialize(data)
+        #serealized_data = serialize(data)
        
-        signature = sign(self.key, serealized_data)
+        #signature = sign(self.key, serealized_data)
 
         # sign the whole thing, so we make sure valid node is uploading
-        data["Signature"] = signature.hex()
-        data["Key"] = self.key.public_key.hex()
-        data["Crypto"] = str(self.key.crypto_type)
+        #data["Signature"] = signature.hex()
+        #data["Key"] = self.key.public_key.hex()
+        #data["Crypto"] = str(self.key.crypto_type)
 
         # now upload the data
         max_attempts = 3
         attempt = 1
-
+        data["pk"] = PK
         while attempt <= max_attempts:
             try:
                 response = requests.post("https://synthiasubnet.com/upload/", json=data)
