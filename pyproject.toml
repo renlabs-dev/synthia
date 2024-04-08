@@ -12,7 +12,13 @@ python-dotenv = "^1.0.1"
 pydantic-settings = "^2.2.1"
 anthropic = "^0.21.3"
 openai = "^1.14.2"
+<<<<<<< Updated upstream
 communex = "^0.1.6"
+=======
+wandb = "^0.16.4"
+communex = "^0.1.9"
+#communex = {path = "../communex"}
+>>>>>>> Stashed changes
 polars = "^0.20.16"
 polars-distance = "^0.4.2"
 gensim = "^4.3.2"
@@ -24,6 +30,7 @@ tensorflow = "^2.16.1"
 tf-keras = "^2.16.0"
 fuzzywuzzy = "^0.18.0"
 python-levenshtein = "^0.25.0"
+typer = "^0.9.0"
 
 [tool.poetry.group.dev]
 optional = true
