@@ -3,15 +3,11 @@ import concurrent.futures
 import re
 import time
 from functools import partial
-from os import getenv
 
 import numpy as np
 import requests
 from communex.client import CommuneClient  # type: ignore
-from communex.compat.types import Ss58Address  # type: ignore
-from communex.module._signer import sign  # type: ignore
 from communex.module.client import ModuleClient  # type: ignore
-from communex.module.client import iso_timestamp_now, serialize  # type: ignore
 from communex.module.module import Module  # type: ignore
 from fuzzywuzzy import fuzz  # type: ignore
 from substrateinterface import Keypair  # type: ignore
@@ -27,8 +23,7 @@ from .similarity import (Embedder, OpenAIEmbedder, OpenAISettings,
 
 # TODO: make it match ipv6
 IP_REGEX = re.compile(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d+")
-PK = getenv("SERVER_PK")
-assert PK
+
 
 def set_weights(
     score_dict: dict[int, float], netuid: int, client: CommuneClient, key: Keypair
@@ -144,6 +139,7 @@ class TextValidator(Module):
             embedder = OpenAIEmbedder(OpenAISettings())  # type: ignore
         self.embedder = embedder
         self.val_model = "claude-3-opus-20240229"
+        self.upload_client = ModuleClient("0.0.0.0", 9001, self.key)
 
     def get_modules(self, client: CommuneClient, netuid: int) -> dict[int, str]:
         """Retrieves all module addresses from the subnet.
@@ -299,10 +295,10 @@ class TextValidator(Module):
         # now upload the data
         max_attempts = 3
         attempt = 1
-        data["pk"] = PK
+        upload_dict = {"data": data}
         while attempt <= max_attempts:
             try:
-                response = requests.post("https://synthiasubnet.com/upload/", json=data)
+                response = asyncio.run(self.upload_client.call("upload_to_hugging_face", upload_dict))
                 response.raise_for_status()  # Raise an exception for 4xx or 5xx status codes
                 break
             except requests.exceptions.RequestException as e:
@@ -321,7 +317,9 @@ class TextValidator(Module):
 
             elapsed = time.time() - start_time
             if elapsed < settings.iteration_interval:
-                time.sleep(settings.iteration_interval - elapsed)
+                sleep_time = settings.iteration_interval - elapsed
+                print(f"Sleeping for {sleep_time}")
+                time.sleep(sleep_time)
 
 
 if __name__ == "__main__":
