@@ -12,8 +12,8 @@ class OpenAISettings(BaseSettings):
 
 class AnthropicSettings(BaseSettings):
     api_key: str
-    model: str = "claude-1.3"
-    max_tokens: int = 100
+    model: str = "claude-3-opus-20240229"
+    max_tokens: int = 1000
     temperature: float = 0.5
 
     class Config:
