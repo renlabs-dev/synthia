@@ -45,6 +45,10 @@ class AnthropicModule(Module, BaseLLM):
             case answer, _:
                 return {"answer": answer}
 
+    @endpoint
+    def get_model(self):
+        return {"model": self.settings.model}
+
     def prompt(self, user_prompt: str, system_prompt: str | None | NotGiven = None):
         if not system_prompt:
             system_prompt = NotGiven()
@@ -62,10 +66,14 @@ class AnthropicModule(Module, BaseLLM):
 
     def _treat_response(self, message: Any):
         # TODO: use result ADT
-        if message.dict()["stop_sequence"] is not None:
+        message_dict = message.dict()
+        if (
+            message_dict["stop_sequence"] is not None or
+            message_dict["stop_reason"] != "end_turn"
+            ):
             return None, "Max tokens were not enough to generate an answer"
 
-        blocks = message.dict()["content"]
+        blocks = message_dict["content"]
         answer = "".join([block["text"] for block in blocks])
         return answer, ""
 
