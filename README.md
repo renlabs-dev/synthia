@@ -16,10 +16,10 @@ By harnessing the power of Commune's decentralized cryptoeconomic incentives we 
 2. Create a file named `config.env` in the `env` folder with the following content:
 
    ```
-   OPENAI_API_KEY=your-api-key
-   OPENAI_MODEL=gpt-3.5-turbo
-   OPENAI_MAX_TOKENS=100
-   OPENAI_TEMPERATURE=1.
+   ANTHROPIC_API_KEY=<your-api-key>
+   ANTHROPIC_MODEL=claude-3-opus-20240229
+   ANTHROPIC_MAX_TOKENS=1000
+   ANTHROPIC_TEMPERATURE=0.5
    ```
 
 3. Serve the miner:
@@ -60,4 +60,4 @@ By harnessing the power of Commune's decentralized cryptoeconomic incentives we 
    Look for the name `synthia` and copy the netuid number.
 
 ## Running A Validator
-WIP
+To run a validator, simply execute `python3 -m synthia.cli <your_anthropic_key> <your_commune_key>`
