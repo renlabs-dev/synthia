@@ -17,7 +17,7 @@ from ..miner.anthropic import AnthropicModule
 from ..utils import retry
 from ._config import ValidatorSettings
 from .generate_data import InputGenerator
-from .meta_prompt import get_miner_prompt
+from .meta_prompt import get_miner_prompt, Criteria
 from .similarity import (Embedder, OpenAIEmbedder, OpenAISettings,
                          euclidean_distance)
 
@@ -141,6 +141,7 @@ class TextValidator(Module):
         self.val_model = "claude-3-opus-20240229"
         self.upload_client = ModuleClient("0.0.0.0", 9001, self.key)
 
+
     def get_modules(self, client: CommuneClient, netuid: int) -> dict[int, str]:
         """Retrieves all module addresses from the subnet.
 
@@ -171,17 +172,21 @@ class TextValidator(Module):
         questions_age = time.time()
         return dataset, criteria, questions_age
 
-    def _get_miner_prediction(self, connection: list[str], question: str) -> str | None:
+    def _get_miner_prediction(self, connection: list[str], question: str) -> tuple[str | None, str | None]:
         module_ip, module_port = connection
         client = ModuleClient(module_ip, int(module_port), self.key)
         try:
-            miner_answer = asyncio.run(client.call("generate", {"prompt": question}))
+            miner_answer = asyncio.run(client.call("generate", {"prompt": question}, timeout=60))
             miner_answer = miner_answer["answer"]
+
+            miner_model = asyncio.run(client.call("get_model", {}))
+            miner_model = miner_model["model"]
         except Exception as e:
             print(f"Miner {module_ip}:{module_port} failed to generate an answer")
             print(e)
             miner_answer = None
-        return miner_answer
+            miner_model = None
+        return miner_answer, miner_model
 
     def _get_unit_euclid_distance(
         self, embedded_miner_answer: list[float], embbeded_val_answer: list[float]
@@ -215,6 +220,26 @@ class TextValidator(Module):
         sim = fuzz.ratio(text_a, text_b)  # type: ignore
         print(f"Score: {score}, similarity: {sim}")
 
+    def _to_hf_data(
+            self, 
+            criteria: Criteria, 
+            subject: str,
+            miner_answer: str,
+            score: float,
+            miner_model: str
+            ):
+        hf_data: dict[str, str] = {}
+        hf_data["field"] = criteria.field
+        hf_data["subject"] = subject
+        hf_data["target"] = criteria.target_audience
+        hf_data["detail"] = criteria.detail
+        hf_data["abstraction"] = criteria.abstraction
+        hf_data[f"explanation"] = miner_answer
+        hf_data["score"] = str(score)
+        hf_data["model"] = miner_model
+        return hf_data
+    
+
     async def validate_step(self, settings: ValidatorSettings, syntia_netuid: int):
         """Performs a validation step.
 
@@ -231,7 +256,7 @@ class TextValidator(Module):
         modules_filtered_address = get_ip_port(modules_adresses)
         response_cache: list[str] = []
         score_dict: dict[int, float] = {}
-        hf_data: dict[str, str] = {}
+        hf_data_list: list[dict[str, str]] = []
         # == Validation loop / Scoring ==
 
         dataset, criteria, _ = self._get_validation_dataset(settings)
@@ -243,11 +268,12 @@ class TextValidator(Module):
         get_miner_prediction = partial(
             self._get_miner_prediction, question=miner_prompt
         )
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
             it = executor.map(get_miner_prediction, modules_filtered_address.values())
             miner_answers = [*it]
-        for uid, miner_answer in zip(modules_filtered_address.keys(), miner_answers):
-            if not miner_answer:
+        for uid, miner_response in zip(modules_filtered_address.keys(), miner_answers):
+            miner_answer, miner_model = miner_response
+            if not miner_answer or not miner_model:
                 continue
             score = self._score_miner(miner_answer, embedded_val_answer)
             for answer in response_cache:
@@ -259,21 +285,19 @@ class TextValidator(Module):
             # score has to be lower or eq to 1, as one is the best score
             assert score <= 1
             score_dict[uid] = score
-
-            # update the dict with the new data
-            hf_data["field"] = criteria.field
-            hf_data["subject"] = subject
-            hf_data["target"] = criteria.target_audience
-            hf_data["detail"] = criteria.detail
-            hf_data["abstraction"] = criteria.abstraction
-            hf_data[f"explanation"] = miner_answer
-            hf_data["score"] = str(score)
-
+            hf_data = self._to_hf_data(
+                criteria, 
+                subject, 
+                miner_answer, 
+                score, 
+                miner_model
+            )
+            hf_data_list.append(hf_data)
         _ = set_weights(score_dict, self.netuid, self.client, self.key)
 
-        return hf_data
+        return hf_data_list
 
-    def upload_data(self, data: dict[str, str]) -> None:
+    def upload_data(self, data: list[dict[str, str]]) -> None:
         """Uploads the validation data.
 
         Args:
@@ -299,7 +323,6 @@ class TextValidator(Module):
         while attempt <= max_attempts:
             try:
                 response = asyncio.run(self.upload_client.call("upload_to_hugging_face", upload_dict))
-                response.raise_for_status()  # Raise an exception for 4xx or 5xx status codes
                 break
             except requests.exceptions.RequestException as e:
                 print(f"Upload attempt {attempt} failed: {e}")
@@ -335,6 +358,9 @@ if __name__ == "__main__":
     )
     setting = ValidatorSettings()  # type: ignore
     validator.validation_loop(setting)
+    # question = "You are a top expert in the field of Applied Cryptography with deep knowledge on the subject ['\"Homomorphic Encryption\"']. Provide an insightful semantically dense explanation of the ['Homomorphic Encryption'] that will be read by a ['enthusiast']. Your goal is their comprehension of the explanation, according to their background expertise. Follow a ['intense'] level of abstraction and a ['high'] level of detail. Target a length of approximately [2431] words."
+    # predictione = validator._get_miner_prediction(['localhost', '8000'], question=question)
+    # print(predictione)
     # examples = [
 
     # (
