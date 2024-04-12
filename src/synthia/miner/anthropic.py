@@ -10,7 +10,7 @@ from ..validator.meta_prompt import explanation_prompt
 from .BaseLLM import BaseLLM
 
 
-class AnthropicModule(Module, BaseLLM):
+class AnthropicModule(BaseLLM):
     def __init__(self, settings: AnthropicSettings | None = None) -> None:
         super().__init__()
         self.settings = settings or AnthropicSettings()  # type: ignore
@@ -51,7 +51,7 @@ class AnthropicModule(Module, BaseLLM):
 
     def prompt(self, user_prompt: str, system_prompt: str | None | NotGiven = None):
         if not system_prompt:
-            system_prompt = NotGiven()
+            system_prompt = self.system_prompt
         message = self.client.messages.create(
             model=self.settings.model,
             max_tokens=self.settings.max_tokens,
