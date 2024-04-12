@@ -19,3 +19,21 @@ class AnthropicSettings(BaseSettings):
     class Config:
         env_prefix = "ANTHROPIC_"
         env_file = "env/config.env"
+
+class OpenRouterSettings(BaseSettings):
+    api_key: str
+    model: str = "mistralai/mistral-7b-instruct:free"
+    max_tokens: int = 1000
+
+    class Config:
+        env_prefix = "OPENROUTER_"
+        env_file = "env/config.env"
+
+class DeepInfraSettings(BaseSettings):
+    api_key: str
+    model: str = "mistralai/Mixtral-8x22B-v0.1"
+    max_tokens: int = 1000
+
+    class Config:
+        env_prefix = "DEEPINFRA_"
+        env_file = "env/config.env"
