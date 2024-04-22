@@ -9,6 +9,7 @@ class OpenAISettings(BaseSettings):
     class Config:
         env_prefix = "OPENAI_"
         env_file = "env/config.env"
+        extra = "ignore"
 
 class AnthropicSettings(BaseSettings):
     api_key: str
@@ -19,6 +20,7 @@ class AnthropicSettings(BaseSettings):
     class Config:
         env_prefix = "ANTHROPIC_"
         env_file = "env/config.env"
+        extra = "ignore"
 
 class OpenRouterSettings(BaseSettings):
     api_key: str
@@ -28,6 +30,7 @@ class OpenRouterSettings(BaseSettings):
     class Config:
         env_prefix = "OPENROUTER_"
         env_file = "env/config.env"
+        extra = "ignore"
 
 class DeepInfraSettings(BaseSettings):
     api_key: str
@@ -37,3 +40,4 @@ class DeepInfraSettings(BaseSettings):
     class Config:
         env_prefix = "DEEPINFRA_"
         env_file = "env/config.env"
+        extra = "ignore"
