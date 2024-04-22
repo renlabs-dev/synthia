@@ -34,7 +34,7 @@ class OpenRouterSettings(BaseSettings):
 
 class DeepInfraSettings(BaseSettings):
     api_key: str
-    model: str = "mistralai/Mixtral-8x22B-v0.1"
+    model: str = "mistralai/Mixtral-8x22B-Instruct-v0.1"
     max_tokens: int = 1000
 
     class Config:
