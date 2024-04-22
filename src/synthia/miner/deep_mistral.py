@@ -15,21 +15,28 @@ class DeepMistral(BaseLLM):
     def max_tokens(self) -> int:
         return self._max_tokens
     
+    @property
+    def model(self) -> str:
+        return self.settings.model
     
     def prompt(self, user_prompt: str, system_prompt: str | None = None):
         context_prompt = system_prompt or self.get_context_prompt(self.max_tokens)
         prompt = {
-            "input": (
-                f" Consider this for context: {context_prompt}",
-                f"Now, answer this: {user_prompt}"
-             ),
-            "max_new_tokens": self.max_tokens
+
+            "model": f"{self.settings.model}",
+            "messages": [
+                {"role": "system", "content": context_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+
+            "max_tokens": self.max_tokens
         }
         
         response = requests.post(
-        url="https://api.deepinfra.com/v1/inference/mistralai/Mixtral-8x22B-v0.1",
+        url="https://api.deepinfra.com/v1/openai/chat/completions",
         headers={
         "Authorization": f"Bearer {self.settings.api_key}",
+        "Content-Type": "application/json"
         },
         data=json.dumps(prompt)
         )
@@ -37,9 +44,10 @@ class DeepMistral(BaseLLM):
         json_response: dict[Any, Any] = response.json()
         answer = json_response["choices"][0]
         finish_reason = answer['finish_reason']
-        if finish_reason:
+        if finish_reason != "stop":
             return None, f"Could not get a complete answer: {finish_reason}"
-        return answer["content"], ""
+        print(answer["message"]["content"]                                                          )
+        return answer["message"]["content"], ""
     
 
 if __name__ == "__main__":
