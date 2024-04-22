@@ -61,4 +61,7 @@ By harnessing the power of Commune's decentralized cryptoeconomic incentives we 
    Look for the name `synthia` and copy the netuid number.
 
 ## Running A Validator
-To run a validator, simply execute `python3 -m synthia.cli <your_anthropic_key> <your_commune_key>`
+To run a validator, simply run `poetry install` and then
+execute `python3 -m synthia.cli <your_anthropic_key> <your_commune_key>`.
+If you don't have poetry, you can find a guide to installation [here](https://python-poetry.org/docs/)
+
