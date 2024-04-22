@@ -24,19 +24,20 @@ By harnessing the power of Commune's decentralized cryptoeconomic incentives we 
 
 3. Serve the miner:
 
-   For OpenAI:
-   ```bash
-   comx module serve synthia.miner.openai.OpenAIModule <key> --subnets-whitelist <synthia netuid> --ip 0.0.0.0
-   ```
-
    For Anthropic:
    ```bash
    comx module serve synthia.miner.anthropic.AnthropicModule <key> --subnets-whitelist <synthia netuid> --ip 0.0.0.0
    ```
+
+    For OpenAI:
+   ```bash
+   comx module serve synthia.miner.openai.OpenAIModule <key> --subnets-whitelist <synthia netuid> --ip 0.0.0.0
+   ```
+   
    The ip is passed as 0.0.0.0 to accept outside connections, since the default,
    127.0.0.1 accepts only local connections.
 
-4. Register the module on the Synthia subnet:
+5. Register the module on the Synthia subnet:
 
    ```bash
    comx module register <name> <public-ip> <port> <key> <synthia netuid>
