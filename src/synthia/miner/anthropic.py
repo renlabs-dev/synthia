@@ -32,23 +32,6 @@ class AnthropicModule(BaseLLM):
             f"Try to keep your answer below {self.settings.max_tokens} tokens"
         )
 
-    @endpoint
-    def generate(self, prompt: str) -> dict[str, str]:
-        try:
-            message = self.prompt(prompt, self.system_prompt)
-        except APIError as e:
-            raise HTTPException(status_code=e.status_code, detail=str(e)) from e  # type: ignore
-
-        match message:
-            case None, explanation:
-                raise HTTPException(status_code=500, detail=explanation)
-            case answer, _:
-                return {"answer": answer}
-
-    @endpoint
-    def get_model(self):
-        return {"model": self.settings.model}
-
     def prompt(self, user_prompt: str, system_prompt: str | None | NotGiven = None):
         if not system_prompt:
             system_prompt = self.system_prompt
@@ -80,6 +63,10 @@ class AnthropicModule(BaseLLM):
     @property
     def max_tokens(self) -> int:
         return self.settings.max_tokens
+    
+    @property
+    def model(self) -> str:
+        return self.settings.model
 
 
 if __name__ == "__main__":
