@@ -14,6 +14,10 @@ class BaseLLM(ABC, Module):
     def max_tokens(self) -> int:
         ...
 
+    @property
+    def model(self) -> str:
+        ...
+
     def get_context_prompt(self, max_tokens: int) -> str:
         prompt = (
             "You are a supreme polymath renowned for your ability to explain "
@@ -45,3 +49,7 @@ class BaseLLM(ABC, Module):
                 raise HTTPException(status_code=500, detail=explanation)
             case answer, _:
                 return {"answer": answer}
+            
+    @endpoint
+    def get_model(self):
+        return {"model": self.model}
