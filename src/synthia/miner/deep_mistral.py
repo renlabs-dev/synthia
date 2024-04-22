@@ -45,7 +45,7 @@ class DeepMistral(BaseLLM):
 if __name__ == "__main__":
     from communex.module.server import ModuleServer
     from substrateinterface import Keypair
-    mistral = Mistral()
+    mistral = DeepMistral()
 
     import uvicorn
 
