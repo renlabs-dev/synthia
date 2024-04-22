@@ -15,7 +15,11 @@ class Mistral(BaseLLM):
     def max_tokens(self) -> int:
         return self._max_tokens
     
+    @property
+    def model(self) -> str:
+        return self.settings.model
     
+
     def prompt(self, user_prompt: str, system_prompt: str | None = None):
         context_prompt = system_prompt or self.get_context_prompt(self.max_tokens)
         prompt = {
@@ -36,9 +40,9 @@ class Mistral(BaseLLM):
         json_response: dict[Any, Any] = response.json()
         answer = json_response["choices"][0]
         finish_reason = answer['finish_reason']
-        if finish_reason:
+        if finish_reason != "stop":
             return None, f"Could not get a complete answer: {finish_reason}"
-        return answer["content"], ""
+        return answer["message"]["content"], ""
     
 
 if __name__ == "__main__":
