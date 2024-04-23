@@ -13,8 +13,7 @@ By harnessing the power of Commune's decentralized cryptoeconomic incentives we 
 1. Using nix
 
 ```bash
-
-somethign
+todo!
 ```
 
 ## Running Miner
