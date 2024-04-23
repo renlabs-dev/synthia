@@ -20,6 +20,7 @@ from .generate_data import InputGenerator
 from .meta_prompt import get_miner_prompt, Criteria
 from .similarity import (Embedder, OpenAIEmbedder, OpenAISettings,
                          euclidean_distance)
+from .math import threshold_sigmoid_reward_distribution
 
 # TODO: make it match ipv6
 IP_REGEX = re.compile(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d+")
@@ -28,7 +29,8 @@ IP_REGEX = re.compile(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d+")
 def set_weights(
     score_dict: dict[int, float], netuid: int, client: CommuneClient, key: Keypair
 ) -> None:
-    """Set weights for miners based on their scores.
+    """
+    Set weights for miners based on their scores.
 
     The lower the score, the higher the weight.
 
@@ -38,14 +40,17 @@ def set_weights(
         client (CommuneClient): The CommuneX client.
         key (Keypair): The keypair for signing transactions.
     """
+
+    adjsuted_to_sigmoid = threshold_sigmoid_reward_distribution(score_dict)
+
     # Create a new dictionary to store the weighted scores
     weighted_scores: dict[int, int] = {}
 
     # Calculate the sum of all inverted scores
-    scores = sum(score_dict.values())
+    scores = sum(adjsuted_to_sigmoid.values())
 
     # Iterate over the items in the score_dict
-    for uid, score in score_dict.items():
+    for uid, score in adjsuted_to_sigmoid.items():
         # Calculate the normalized weight as an integer
         weight = int(score / scores * 100)
 
@@ -322,7 +327,7 @@ class TextValidator(Module):
         upload_dict = {"data": data}
         while attempt <= max_attempts:
             try:
-                response = asyncio.run(self.upload_client.call("upload_to_hugging_face", upload_dict))
+                _ = asyncio.run(self.upload_client.call("upload_to_hugging_face", upload_dict))
                 break
             except requests.exceptions.RequestException as e:
                 print(f"Upload attempt {attempt} failed: {e}")

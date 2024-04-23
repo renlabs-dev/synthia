@@ -11,7 +11,8 @@ class ValidatorSettings(BaseSettings):
 
     # == Scoring ==
     # sleep time between each iteration
-    iteration_interval: int = 1200
+    # (we are aiming at 50 block subnet tempo, with 8 second block time)
+    iteration_interval: int = 400
 
     class Config:
         env_prefix = "ANTHROPIC_"
