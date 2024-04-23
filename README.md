@@ -59,7 +59,7 @@ intelligence right into the hands of the Open-Source Community!
 
 1. Get an API key from [Anthropic](https://console.anthropic.com/).
 
-note: if you have trouble getting an API key from Anthropic or are facing rate-limitting, look for an alternative Claude Opus API such as the official options [Amazon Bedrock](https://docs.anthropic.com/claude/reference/claude-on-amazon-bedrock) or [Vertex AI](https://docs.anthropic.com/claude/reference/claude-on-vertex-ai).
+Note: if you have trouble getting an API key from Anthropic or are facing rate-limitting, look for an alternative Claude Opus API such as the official options [Amazon Bedrock](https://docs.anthropic.com/claude/reference/claude-on-amazon-bedrock) or [Vertex AI](https://docs.anthropic.com/claude/reference/claude-on-vertex-ai).
 
 3. Create a file named `config.env` in the `env/` folder with the following
    contents:
