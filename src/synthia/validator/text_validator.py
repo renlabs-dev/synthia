@@ -328,6 +328,7 @@ class TextValidator(Module):
         upload_dict = {"data_list": data}
         while attempt <= max_attempts:
             try:
+
                 _ = asyncio.run(self.upload_client.call("upload_to_hugging_face", upload_dict))
                 print("UPLOADED DATA")
                 break
