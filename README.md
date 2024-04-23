@@ -59,7 +59,9 @@ intelligence right into the hands of the Open-Source Community!
 
 1. Get an API key from [Anthropic](https://console.anthropic.com/).
 
-2. Create a file named `config.env` in the `env/` folder with the following
+note: if you have trouble getting an API key from Anthropic or are facing rate-limitting, look for an alternative Claude Opus API such as the official options [Amazon Bedrock](https://docs.anthropic.com/claude/reference/claude-on-amazon-bedrock) or [Vertex AI](https://docs.anthropic.com/claude/reference/claude-on-vertex-ai).
+
+3. Create a file named `config.env` in the `env/` folder with the following
    contents:
 
    ```sh
@@ -69,7 +71,7 @@ intelligence right into the hands of the Open-Source Community!
    ANTHROPIC_TEMPERATURE=0.5
    ```
 
-3. Serve the miner:
+4. Serve the miner:
 
    ```sh
    comx module serve synthia.miner.anthropic.AnthropicModule <key> --subnets-whitelist <synthia netuid> --ip 0.0.0.0
@@ -81,7 +83,7 @@ intelligence right into the hands of the Open-Source Community!
    Note: you need to keep this process alive, running in the background. Some
    options are [tmux](https://www.tmux.org/), [pm2](https://pm2.io/docs/plus/quick-start/) or [nohup](https://en.wikipedia.org/wiki/Nohup).
 
-4. Register the module on the Synthia subnet:
+5. Register the module on the Synthia subnet:
 
    ```sh
    comx module register <name> <public-ip> <port> <key> <synthia netuid>
@@ -109,3 +111,5 @@ intelligence right into the hands of the Open-Source Community!
 ```sh
 python3 -m synthia.cli <your_anthropic_key> <your_commune_key>
 ```
+
+Note: you need to keep this process alive, running in the background. Some options are [tmux](https://www.tmux.org/), [pm2](https://pm2.io/docs/plus/quick-start/) or [nohup](https://en.wikipedia.org/wiki/Nohup).
