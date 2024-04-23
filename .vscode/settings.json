@@ -1,4 +1,11 @@
 {
     "workbench.iconTheme": "developer-icon-theme",
-    "python.analysis.typeCheckingMode": "strict"
+    "python.analysis.typeCheckingMode": "strict",
+    "cSpell.words": [
+        "claude",
+        "comx",
+        "direnv",
+        "netuid",
+        "synthia"
+    ]
 }
