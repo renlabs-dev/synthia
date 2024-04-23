@@ -139,7 +139,7 @@ class TextValidator(Module):
             embedder = OpenAIEmbedder(OpenAISettings())  # type: ignore
         self.embedder = embedder
         self.val_model = "claude-3-opus-20240229"
-        self.upload_client = ModuleClient("0.0.0.0", 9001, self.key)
+        self.upload_client = ModuleClient("0.0.0.0", 8002, self.key)
 
 
     def get_modules(self, client: CommuneClient, netuid: int) -> dict[int, str]:
@@ -274,6 +274,7 @@ class TextValidator(Module):
         for uid, miner_response in zip(modules_filtered_address.keys(), miner_answers):
             miner_answer, miner_model = miner_response
             if not miner_answer or not miner_model:
+                print("Skipping miner that didn't answer")
                 continue
             score = self._score_miner(miner_answer, embedded_val_answer)
             for answer in response_cache:
@@ -319,10 +320,11 @@ class TextValidator(Module):
         # now upload the data
         max_attempts = 3
         attempt = 1
-        upload_dict = {"data": data}
+        upload_dict = {"data_list": data}
         while attempt <= max_attempts:
             try:
                 response = asyncio.run(self.upload_client.call("upload_to_hugging_face", upload_dict))
+                print("UPLOADED DATA")
                 break
             except requests.exceptions.RequestException as e:
                 print(f"Upload attempt {attempt} failed: {e}")
@@ -340,7 +342,8 @@ class TextValidator(Module):
 
             elapsed = time.time() - start_time
             if elapsed < settings.iteration_interval:
-                sleep_time = settings.iteration_interval - elapsed
+                #sleep_time = settings.iteration_interval - elapsed
+                sleep_time = 3 * 60
                 print(f"Sleeping for {sleep_time}")
                 time.sleep(sleep_time)
 
