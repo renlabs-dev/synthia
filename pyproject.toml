@@ -10,10 +10,12 @@ readme = "README.md"
 python = "^3.11"
 python-dotenv = "^1.0.1"
 pydantic-settings = "^2.2.1"
+# validators
 anthropic = "^0.21.3"
+# embeddings
 openai = "^1.14.2"
-# communex = "^0.1.9"
-communex = { git = "https://github.com/agicommies/communex.git", rev = "feature/timestamp"}
+communex = "^0.1.16"
+#communex = { git = "https://github.com/agicommies/communex.git", rev = "feature/timestamp"}
 
 polars = "^0.20.16"
 polars-distance = "^0.4.2"
