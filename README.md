@@ -78,8 +78,8 @@ intelligence right into the hands of the Open-Source Community!
    The ip is passed as 0.0.0.0 to accept outside connections, since the default,
    127.0.0.1 accepts only local connections.
 
-   Note: you need to keep this process alive, running in the background. One
-   option is to use [tmux](https://www.tmux.org/) or [nohup](https://en.wikipedia.org/wiki/Nohup).
+   Note: you need to keep this process alive, running in the background. Some
+   options are [tmux](https://www.tmux.org/), [pm2](https://pm2.io/docs/plus/quick-start/) or [nohup](https://en.wikipedia.org/wiki/Nohup).
 
 4. Register the module on the Synthia subnet:
 
