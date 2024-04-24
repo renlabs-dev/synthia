@@ -13,7 +13,7 @@ class ValidatorSettings(BaseSettings):
     # sleep time between each iteration
     # (we are aiming at 50 block subnet tempo, with 8 second block time)
     iteration_interval: int = 400
-    max_allowed_weights = 420 # this is a global parameter of the maximum weights that a validator can set
+    max_allowed_weights: int = 420 # this is a global parameter of the maximum weights that a validator can set
     hf_uploader_ss58: str = "5EX6ixabe8fiWHySw4SYaJAkaHLKeqSJ3rv7so2FrLC2cfGV"
 
     class Config:
