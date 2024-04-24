@@ -9,6 +9,8 @@ import requests
 from communex.client import CommuneClient  # type: ignore
 from communex.module.client import ModuleClient  # type: ignore
 from communex.module.module import Module  # type: ignore
+from communex.compat.key import check_ss58_address # type: ignore
+from communex.types import Ss58Address # type: ignore
 from fuzzywuzzy import fuzz  # type: ignore
 from substrateinterface import Keypair  # type: ignore
 
@@ -144,7 +146,7 @@ class TextValidator(Module):
             embedder = OpenAIEmbedder(OpenAISettings())  # type: ignore
         self.embedder = embedder
         self.val_model = "claude-3-opus-20240229"
-        self.upload_client = ModuleClient("0.0.0.0", 8002, self.key)
+        self.upload_client = ModuleClient("5.161.229.89", 80, self.key)
 
 
     def get_modules(self, client: CommuneClient, netuid: int) -> dict[int, str]:
@@ -177,21 +179,27 @@ class TextValidator(Module):
         questions_age = time.time()
         return dataset, criteria, questions_age
 
-    def _get_miner_prediction(self, connection: list[str], question: str) -> tuple[str | None, str | None]:
+    def _get_miner_prediction(
+            self, 
+            question: str,
+            connection: list[str], 
+            miner_key: Ss58Address,
+        ) -> str | None:
         module_ip, module_port = connection
         client = ModuleClient(module_ip, int(module_port), self.key)
         try:
-            miner_answer = asyncio.run(client.call("generate", {"prompt": question}, timeout=60))
+            miner_answer = asyncio.run(
+                client.call(
+                    "generate", miner_key, {"prompt": question}, timeout=60
+                    )
+                )
             miner_answer = miner_answer["answer"]
 
-            miner_model = asyncio.run(client.call("get_model", {}))
-            miner_model = miner_model["model"]
         except Exception as e:
             print(f"Miner {module_ip}:{module_port} failed to generate an answer")
             print(e)
             miner_answer = None
-            miner_model = None
-        return miner_answer, miner_model
+        return miner_answer
 
     def _get_unit_euclid_distance(
         self, embedded_miner_answer: list[float], embbeded_val_answer: list[float]
@@ -231,7 +239,6 @@ class TextValidator(Module):
             subject: str,
             miner_answer: str,
             score: float,
-            miner_model: str
             ):
         hf_data: dict[str, str] = {}
         hf_data["field"] = criteria.field
@@ -241,7 +248,6 @@ class TextValidator(Module):
         hf_data["abstraction"] = criteria.abstraction
         hf_data[f"explanation"] = miner_answer
         hf_data["score"] = str(score)
-        hf_data["model"] = miner_model
         return hf_data
     
 
@@ -258,7 +264,15 @@ class TextValidator(Module):
         """
 
         modules_adresses = self.get_modules(self.client, syntia_netuid)
+        modules_keys = self.client.query_map_key(syntia_netuid)
+        modules_info: dict[int, tuple[list[str], Ss58Address]] = {}
+            
+
         modules_filtered_address = get_ip_port(modules_adresses)
+        for module_id in modules_keys.keys():
+            module_addr = modules_filtered_address.get(module_id, ["", ""])
+            modules_info[module_id] = (module_addr, modules_keys[module_id])
+
         response_cache: list[str] = []
         score_dict: dict[int, float] = {}
         hf_data_list: list[dict[str, str]] = []
@@ -274,11 +288,11 @@ class TextValidator(Module):
             self._get_miner_prediction, question=miner_prompt
         )
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-            it = executor.map(get_miner_prediction, modules_filtered_address.values())
+            it = executor.map(get_miner_prediction, modules_info.values())
             miner_answers = [*it]
-        for uid, miner_response in zip(modules_filtered_address.keys(), miner_answers):
-            miner_answer, miner_model = miner_response
-            if not miner_answer or not miner_model:
+        for uid, miner_response in zip(modules_info.keys(), miner_answers):
+            miner_answer = miner_response
+            if not miner_answer:
                 print("Skipping miner that didn't answer")
                 continue
             score = self._score_miner(miner_answer, embedded_val_answer)
@@ -292,44 +306,38 @@ class TextValidator(Module):
             assert score <= 1
             score_dict[uid] = score
             hf_data = self._to_hf_data(
-                criteria, 
-                subject, 
+                criteria,
+                subject,
                 miner_answer, 
-                score, 
-                miner_model
+                score,
             )
             hf_data_list.append(hf_data)
         _ = set_weights(score_dict, self.netuid, self.client, self.key)
 
         return hf_data_list
 
-    def upload_data(self, data: list[dict[str, str]]) -> None:
+    def upload_data(
+            self, data: list[dict[str, str]], 
+            hf_uploader_ss58: Ss58Address
+        ) -> None:
         """Uploads the validation data.
 
         Args:
             data: A dictionary containing the validation data to upload.
         """
-
-        # add a timestamp
-        #data["Timestamp"] = iso_timestamp_now()
-
-        #serealized_data = serialize(data)
-       
-        #signature = sign(self.key, serealized_data)
-
-        # sign the whole thing, so we make sure valid node is uploading
-        #data["Signature"] = signature.hex()
-        #data["Key"] = self.key.public_key.hex()
-        #data["Crypto"] = str(self.key.crypto_type)
-
-        # now upload the data
         max_attempts = 3
         attempt = 1
         upload_dict = {"data_list": data}
         while attempt <= max_attempts:
             try:
 
-                _ = asyncio.run(self.upload_client.call("upload_to_hugging_face", upload_dict))
+                _ = asyncio.run(
+                    self.upload_client.call(
+                        "upload_to_hugging_face", 
+                        hf_uploader_ss58,
+                        upload_dict, 
+                        )
+                    )
                 print("UPLOADED DATA")
                 break
             except requests.exceptions.RequestException as e:
@@ -341,74 +349,14 @@ class TextValidator(Module):
             settings = ValidatorSettings()  # type: ignore
 
         # Run validation
+        hf_ss58 = check_ss58_address(settings.hf_uploader_ss58)
         while True:
             start_time = time.time()
             db = asyncio.run(self.validate_step(settings, self.netuid))
-            self.upload_data(db)
+            self.upload_data(db, hf_ss58)
 
             elapsed = time.time() - start_time
             if elapsed < settings.iteration_interval:
-                #sleep_time = settings.iteration_interval - elapsed
-                sleep_time = 3 * 60
+                sleep_time = settings.iteration_interval - elapsed
                 print(f"Sleeping for {sleep_time}")
                 time.sleep(sleep_time)
-
-
-if __name__ == "__main__":
-    node_url = "wss://testnet-commune-api-node-0.communeai.net"
-    client = CommuneClient(node_url)
-    SYNTHIA_NETUID = get_synthia_netuid(client)
-    print(f"SYNTHIA_NETUID: {SYNTHIA_NETUID}")
-    KEY_MNEMONIC = (
-        "electric suffer nephew rough gentle decline fun body tray account vital clinic"
-    )
-    validator = TextValidator(
-        Keypair.create_from_mnemonic(KEY_MNEMONIC), SYNTHIA_NETUID, client
-    )
-    setting = ValidatorSettings()  # type: ignore
-    validator.validation_loop(setting)
-    # question = "You are a top expert in the field of Applied Cryptography with deep knowledge on the subject ['\"Homomorphic Encryption\"']. Provide an insightful semantically dense explanation of the ['Homomorphic Encryption'] that will be read by a ['enthusiast']. Your goal is their comprehension of the explanation, according to their background expertise. Follow a ['intense'] level of abstraction and a ['high'] level of detail. Target a length of approximately [2431] words."
-    # predictione = validator._get_miner_prediction(['localhost', '8000'], question=question)
-    # print(predictione)
-    # examples = [
-
-    # (
-    #     "It's not true at all that Bob understands the embeddings.",
-    #     "The embeddings are not comprehended by Bob.",
-    #     "SHOULD BE SIMILAR"
-    # ),
-    # (
-    #     "It's not true at all that Bob understands the embeddings.",
-    #     "Bob doesn't comprehend the embeddings very well, but it's enough.",
-    #     "SHOULDN'T BE VERY SIMILAR"
-    # ),
-    # (
-    #     "James was not right about Bob",
-    #     "James did a wrong assessment of Bob's understanding",
-    #     "SHOULD BE SIMILAR"
-    # ),
-    # (
-    #     "Commune will surpass Bitcoin",
-    #     "Commune will be worth more than Bitcoin",
-    #     "SHOULD BE SIMILAR"
-    # ),
-    # (
-    #     "Im testing this",
-    #     "You have to be very high IQ to understand ricky and morty",
-    #     "SHOULDN'T BE SIMILAR"
-    # ),
-    # (
-    #     "I would like to know why the distance decreases when the context changes",
-    #     "Why does the distance decreases with context changes?",
-    #     "SHOULD BE SIMILAR",
-    # ),
-    # (
-    #     "I would like to know why the distance decreases when the context changes",
-    #     "Why does the distance increases with context changes?",
-    #     "SHOULDN'T BE SIMILAR",
-    # ),
-    # ]
-    # for a, b, c in examples:
-    #     validator._test_score(a, b)
-    #     print(c)
-    #     print("----------------------")
