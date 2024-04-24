@@ -19,7 +19,7 @@ Welcome to the Synthia subnet, a bleeding-edge initiative to accelerate the open
 
 ## Overview
 
-Synthia is utilizing the state-of-the-art Anthropic Claude3 API to generate open-ended high-quality and diverse synthetic in-depth explanations of subjects picked from the Opus latent space with varying target-audience, level of detail and abstraction at scale.
+Synthia is utilizing the state-of-the-art Anthropic Claude3 API to generate open-ended high-quality and diverse synthetic in-depth explanations of subjects picked from the Opus latent space based on varying esotericity, with varying target-audience, level of detail and abstraction at scale.
 
 While any model or API can theoretically mine in the subnet, the validation is designed to target Claude3-level quality, due to its substantially superior ability to generate the desired synthetic data. Hence, we advise mining with the Claude3 API, although support for OpenAI's API is available.
 
