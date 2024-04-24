@@ -290,6 +290,11 @@ class TextValidator(Module):
 
         modules_adresses = self.get_modules(self.client, syntia_netuid)
         modules_keys = self.client.query_map_key(syntia_netuid)
+        val_ss58 = self.key.ss58_address
+        if val_ss58 not in modules_keys.values():
+            raise RuntimeError(
+                f"validator key {val_ss58} is not registered in subnet"
+                )
         modules_info: dict[int, tuple[list[str], Ss58Address]] = {}
 
         modules_filtered_address = get_ip_port(modules_adresses)
