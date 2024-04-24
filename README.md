@@ -112,7 +112,7 @@ Join us on this important journey as we distill the Closed-Source intelligence r
 4. Finally register the module on the Synthia subnet:
 
    ```sh
-   comx module register <name> <your_commune_key> --<your-ip-address> --<port> --netuid <synthia netuid>  
+   comx module register <name> <your_commune_key> --ip <your-ip-address> --port <port> --netuid <synthia netuid>  
    ```
 
 ### Note
