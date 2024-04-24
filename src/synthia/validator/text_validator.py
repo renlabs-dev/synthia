@@ -16,7 +16,7 @@ from substrateinterface import Keypair  # type: ignore
 
 from ..miner._config import AnthropicSettings
 from ..miner.anthropic import AnthropicModule
-from ..utils import retry
+from ..utils import retry, log
 from ._config import ValidatorSettings
 from .generate_data import InputGenerator
 from .meta_prompt import get_miner_prompt, Criteria
@@ -220,7 +220,7 @@ class TextValidator(Module):
             miner_answer = miner_answer["answer"]
 
         except Exception as e:
-            print(f"Miner {module_ip}:{module_port} failed to generate an answer")
+            log(f"Miner {module_ip}:{module_port} failed to generate an answer")
             print(e)
             miner_answer = None
         return miner_answer
@@ -255,7 +255,7 @@ class TextValidator(Module):
         embbeded_a = self.embedder.get_embedding(text_a)
         score = self._score_miner(text_b, embbeded_a)
         sim = fuzz.ratio(text_a, text_b)  # type: ignore
-        print(f"Score: {score}, similarity: {sim}")
+        log(f"Score: {score}, similarity: {sim}")
 
     def _to_hf_data(
         self,
@@ -322,12 +322,12 @@ class TextValidator(Module):
         for uid, miner_response in zip(modules_info.keys(), miner_answers):
             miner_answer = miner_response
             if not miner_answer:
-                print("Skipping miner that didn't answer")
+                log("Skipping miner that didn't answer")
                 continue
             score = self._score_miner(miner_answer, embedded_val_answer)
             for answer in response_cache:
                 similarity = fuzz.ratio(answer, miner_answer)  # type: ignore
-                print(f"similarity: {similarity}")
+                log(f"similarity: {similarity}")
             response_cache.append(miner_answer)
 
             time.sleep(0.5)
@@ -342,7 +342,7 @@ class TextValidator(Module):
             )
             hf_data_list.append(hf_data)
         if not score_dict:
-            print("No miner managed to give a valid answer")
+            log("No miner managed to give a valid answer")
             return []
         _ = set_weights(score_dict, self.netuid, self.client, self.key)
 
@@ -369,10 +369,10 @@ class TextValidator(Module):
                         upload_dict,
                     )
                 )
-                print("UPLOADED DATA")
+                log("UPLOADED DATA")
                 break
             except requests.exceptions.RequestException as e:
-                print(f"Upload attempt {attempt} failed: {e}")
+                log(f"Upload attempt {attempt} failed: {e}")
                 attempt += 1
 
     def validation_loop(self, settings: ValidatorSettings | None = None) -> None:
@@ -390,5 +390,5 @@ class TextValidator(Module):
             elapsed = time.time() - start_time
             if elapsed < settings.iteration_interval:
                 sleep_time = settings.iteration_interval - elapsed
-                print(f"Sleeping for {sleep_time}")
+                log(f"Sleeping for {sleep_time}")
                 time.sleep(sleep_time)

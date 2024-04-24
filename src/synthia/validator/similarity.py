@@ -5,14 +5,12 @@ from typing import Any
 from pydantic_settings import BaseSettings
 import openai
 import numpy
-import polars as pl
-import polars_distance
 from transformers import pipeline, Pipeline  # type: ignore
 
-from ..utils import timeit
+from ..utils import log
 
 
-def _do_debug():
+def _do_debug():  # type: ignore
     from IPython import embed  # type: ignore
 
     embed()
@@ -138,8 +136,8 @@ def main(openai_settings: OpenAISettings):
 
     openai_embedder = OpenAIEmbedder(openai_settings)
     distancer = JairiumDistancer()
-    ai_dist_list = []
-    dist_dist_list = []
+    ai_dist_list: list[Any] = []
+    dist_dist_list: list[Any] = []
     classider = get_classifier()
     for example_items in examples:
         # Before validating with embedder,
@@ -153,19 +151,19 @@ def main(openai_settings: OpenAISettings):
         embedding_a, embedding_b = embeddings
         ai_dist = euclidean_distance(embedding_a, embedding_b)
         ai_dist_list.append(ai_dist)
-        # print(f"  AI_DIST: {ai_dist:.4f}")
+        # log(f"  AI_DIST: {ai_dist:.4f}")
 
         example_a, example_b = example_items
         dist = distancer.get_distance(example_a, example_b)
         dist_dist_list.append(dist)
-        # print(f"DIST_DIST: {dist:.4f}")
+        # log(f"DIST_DIST: {dist:.4f}")
 
-    print(f"AI_DIST: {np.array(ai_dist_list)/sum(ai_dist_list)}")
-    print(f"DIST_DIST: {np.array(dist_dist_list)/sum(dist_dist_list)}")
+    log(f"AI_DIST: {np.array(ai_dist_list)/sum(ai_dist_list)}")
+    log(f"DIST_DIST: {np.array(dist_dist_list)/sum(dist_dist_list)}")
 
     # for example_items in examples:
     # embedding_a, embedding_b = embeddings
-    # print(embedding_a, embedding_b)
+    # log(embedding_a, embedding_b)
     # polars_distance.
 
 

@@ -1,14 +1,12 @@
 from typing import Any
 
-from fastapi import HTTPException
-from anthropic import Anthropic, APIError
+from anthropic import Anthropic
 from communex.module.module import Module, endpoint  # type: ignore
 from anthropic._types import NotGiven
-import typer
-from communex.key import generate_keypair
+from communex.key import generate_keypair  # type: ignore
 
 from ._config import AnthropicSettings  # Import the AnthropicSettings class from config
-from ..validator.meta_prompt import explanation_prompt
+from ..utils import log  # Import the log function from utils
 from .BaseLLM import BaseLLM
 
 
@@ -53,9 +51,9 @@ class AnthropicModule(BaseLLM):
         # TODO: use result ADT
         message_dict = message.dict()
         if (
-            message_dict["stop_sequence"] is not None or
-            message_dict["stop_reason"] != "end_turn"
-            ):
+            message_dict["stop_sequence"] is not None
+            or message_dict["stop_reason"] != "end_turn"
+        ):
             return None, "Max tokens were not enough to generate an answer"
 
         blocks = message_dict["content"]
@@ -65,18 +63,19 @@ class AnthropicModule(BaseLLM):
     @property
     def max_tokens(self) -> int:
         return self.settings.max_tokens
-    
+
     @property
     def model(self) -> str:
         return self.settings.model
 
 
 if __name__ == "__main__":
-    from communex.module.server import ModuleServer
+    from communex.module.server import ModuleServer  # type: ignore
 
     import uvicorn
+
     key = generate_keypair()
-    print(f"Running module with key {key.ss58_address}")
+    log(f"Running module with key {key.ss58_address}")
     claude = AnthropicModule()
     server = ModuleServer(claude, key)
     app = server.get_fastapi_app()
