@@ -360,7 +360,8 @@ class TextValidator(Module):
         while True:
             start_time = time.time()
             db = asyncio.run(self.validate_step(settings, self.netuid))
-            self.upload_data(db, hf_ss58)
+            if db:
+                self.upload_data(db, hf_ss58)
 
             elapsed = time.time() - start_time
             if elapsed < settings.iteration_interval:
