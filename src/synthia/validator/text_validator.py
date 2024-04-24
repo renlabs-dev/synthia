@@ -182,9 +182,9 @@ class TextValidator(Module):
     def _get_miner_prediction(
             self, 
             question: str,
-            connection: list[str], 
-            miner_key: Ss58Address,
+            miner_info: tuple[list[str], Ss58Address],
         ) -> str | None:
+        connection, miner_key = miner_info
         module_ip, module_port = connection
         client = ModuleClient(module_ip, int(module_port), self.key)
         try:
@@ -246,12 +246,16 @@ class TextValidator(Module):
         hf_data["target"] = criteria.target_audience
         hf_data["detail"] = criteria.detail
         hf_data["abstraction"] = criteria.abstraction
-        hf_data[f"explanation"] = miner_answer
+        hf_data["explanation"] = miner_answer
         hf_data["score"] = str(score)
         return hf_data
     
 
-    async def validate_step(self, settings: ValidatorSettings, syntia_netuid: int):
+    async def validate_step(
+            self, 
+            settings: ValidatorSettings, 
+            syntia_netuid: int
+            ) -> list[dict[str, str]]:
         """Performs a validation step.
 
         Generates questions based on the provided settings, prompts modules to
@@ -285,7 +289,7 @@ class TextValidator(Module):
         embedded_val_answer = self.embedder.get_embedding(val_answer)
 
         get_miner_prediction = partial(
-            self._get_miner_prediction, question=miner_prompt
+            self._get_miner_prediction, miner_prompt
         )
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
             it = executor.map(get_miner_prediction, modules_info.values())
@@ -312,6 +316,9 @@ class TextValidator(Module):
                 score,
             )
             hf_data_list.append(hf_data)
+        if not score_dict:
+            print("No miner managed to give a valid answer")
+            return []
         _ = set_weights(score_dict, self.netuid, self.client, self.key)
 
         return hf_data_list
