@@ -62,7 +62,7 @@ Join us on this important journey as we distill the Closed-Source intelligence r
   - `sudo apt install python3`
 - [Install Poetry](https://python-poetry.org/docs/)
 - Install the Python dependencies with `poetry install`
-- Enter the Python environment with `poetry shell`
+- **! IMPORTANT** Enter the Python environment with `poetry shell` 
 
 ## Running A Miner
 
