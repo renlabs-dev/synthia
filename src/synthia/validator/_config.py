@@ -13,6 +13,7 @@ class ValidatorSettings(BaseSettings):
     # sleep time between each iteration
     # (we are aiming at 50 block subnet tempo, with 8 second block time)
     iteration_interval: int = 400
+    hf_uploader_ss58: str = "5EX6ixabe8fiWHySw4SYaJAkaHLKeqSJ3rv7so2FrLC2cfGV"
 
     class Config:
         env_prefix = "ANTHROPIC_"
