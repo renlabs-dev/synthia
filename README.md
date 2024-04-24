@@ -12,7 +12,8 @@ Welcome to the Synthia subnet, a bleeding-edge initiative to accelerate the open
   - [Installation](#installation)
     - [Setup your environment](#setup-your-environment)
       - [With Nix](#with-nix)
-      - [or manually, on Ubuntu 22.04](#or-manually-on-ubuntu-2204)
+      - [Manually, on Ubuntu 22.04](#manually-on-ubuntu-2204)
+      - [With Docker](#with-docker)
   - [Running A Miner](#running-a-miner)
     - [Note](#note)
   - [Running A Validator](#running-a-validator)
@@ -56,13 +57,23 @@ Join us on this important journey as we distill the Closed-Source intelligence r
 
 [install.determinate.systems]: https://install.determinate.systems/
 
-#### or manually, on Ubuntu 22.04
+#### Manually, on Ubuntu 22.04
 
 - Install Python 3
   - `sudo apt install python3`
 - [Install Poetry](https://python-poetry.org/docs/)
 - Install the Python dependencies with `poetry install`
 - Enter the Python environment with `poetry shell`
+
+#### With Docker
+- Install Docker
+- Run `docker pull ghcr.io/agicommies/synthia:0.1`
+- Run `docker run -v <path_to_keys>:/root/.commune ghcr.io/agicommies/synthia:0.1`
+- Run `poetry shell` to enter the enviroment
+  
+  You can 
+
+
 
 ## Running A Miner
 
