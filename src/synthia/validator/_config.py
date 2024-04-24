@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings
 
 
 class ValidatorSettings(BaseSettings):
-    api_key: str  # openai key, used to generate questions and answers
+    api_key: str  #  anthropic api key
     # == Text generation ==
     model: str = "claude-3-opus-20240229"
     temperature: float = 0.2
