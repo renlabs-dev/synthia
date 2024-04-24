@@ -299,7 +299,9 @@ class TextValidator(Module):
 
         modules_filtered_address = get_ip_port(modules_adresses)
         for module_id in modules_keys.keys():
-            module_addr = modules_filtered_address.get(module_id, ["", ""])
+            module_addr = modules_filtered_address.get(module_id, None)
+            if not module_addr:
+                continue
             modules_info[module_id] = (module_addr, modules_keys[module_id])
 
         response_cache: list[str] = []
