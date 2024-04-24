@@ -8,5 +8,5 @@ class AnthropicSettings(BaseSettings):
 
     class Config:
         env_prefix = "ANTHROPIC_"
-        env_file = "env/config.env"
+        env_file = None
         extra = "ignore"
