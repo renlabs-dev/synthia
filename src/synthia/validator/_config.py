@@ -17,4 +17,6 @@ class ValidatorSettings(BaseSettings):
 
     class Config:
         env_prefix = "ANTHROPIC_"
-        env_file = "env/anthropic.env"
+        env_file = "env/config.env"
+        extra = "ignore"
+

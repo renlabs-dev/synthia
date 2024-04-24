@@ -17,12 +17,6 @@ app = typer.Typer()
 
 @app.command('serve-synthia')
 def serve(
-    anthropic_api_key: Annotated[
-        str,
-        typer.Argument(
-            help="The API key for the Anthropic API"
-            )
-    ],
     commune_key: Annotated[
         str, 
         typer.Argument(
@@ -35,11 +29,10 @@ def serve(
     ):
     keypair = classic_load_key(commune_key) # type: ignore
     settings = ValidatorSettings(
-        api_key=anthropic_api_key,
         temperature=temperature,
         max_tokens=max_tokens,
         iteration_interval=iteration_interval,
-    )
+    ) #type: ignore
     c_client = CommuneClient(get_node_url())
     synthia_uid = get_synthia_netuid(c_client)
     validator = TextValidator(keypair, synthia_uid, c_client)
