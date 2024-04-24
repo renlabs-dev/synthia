@@ -93,7 +93,7 @@ Join us on this important journey as we distill the Closed-Source intelligence r
    ```
 
    The **ip** is passed as **0.0.0.0** to accept **outside connections**, since the default,
-   **127.0.0.1** accepts **only local** connections. Synthia has the **netud 3**. Key is a name of your commune wallet/key.
+   **127.0.0.1** accepts **only local** connections. Synthia has the **netuid 3**. Key is a name of your commune wallet/key.
    If you don't have a wallet, generate one by running
 
    ```bash
@@ -112,7 +112,7 @@ Join us on this important journey as we distill the Closed-Source intelligence r
 4. Finally register the module on the Synthia subnet:
 
    ```sh
-   comx module register <name> <your_commune_key> --ip <public-ip> --port <port>  --netuid <synthia netuid>  
+   comx module register <name> <your_commune_key> --<your-ip-address> --<port> --netuid <synthia netuid>  
    ```
 
 ### Note
