@@ -9,8 +9,8 @@ import requests
 from communex.client import CommuneClient  # type: ignore
 from communex.module.client import ModuleClient  # type: ignore
 from communex.module.module import Module  # type: ignore
-from communex.compat.key import check_ss58_address # type: ignore
-from communex.types import Ss58Address # type: ignore
+from communex.compat.key import check_ss58_address  # type: ignore
+from communex.types import Ss58Address  # type: ignore
 from fuzzywuzzy import fuzz  # type: ignore
 from substrateinterface import Keypair  # type: ignore
 
@@ -20,8 +20,7 @@ from ..utils import retry
 from ._config import ValidatorSettings
 from .generate_data import InputGenerator
 from .meta_prompt import get_miner_prompt, Criteria
-from .similarity import (Embedder, OpenAIEmbedder, OpenAISettings,
-                         euclidean_distance)
+from .similarity import Embedder, OpenAIEmbedder, OpenAISettings, euclidean_distance
 from .math import threshold_sigmoid_reward_distribution
 
 # TODO: make it match ipv6
@@ -43,7 +42,8 @@ def set_weights(
         key (Keypair): The keypair for signing transactions.
     """
 
-    adjsuted_to_sigmoid = threshold_sigmoid_reward_distribution(score_dict)
+    cut_weights = cut_to_max_allowed_weights(score_dict)
+    adjsuted_to_sigmoid = threshold_sigmoid_reward_distribution(cut_weights)
 
     # Create a new dictionary to store the weighted scores
     weighted_scores: dict[int, int] = {}
@@ -66,6 +66,33 @@ def set_weights(
     weights = list(weighted_scores.values())
     client.vote(key=key, uids=uids, weights=weights, netuid=netuid)
 
+
+def cut_to_max_allowed_weights(
+    score_dict: dict[int, float], settings: ValidatorSettings | None = None
+) -> dict[int, float]:
+    """
+    Cuts the scores to the maximum allowed weights.
+
+    Args:
+        score_dict (dict[int, float]): A dictionary mapping miner UIDs to their scores.
+
+    Returns:
+            dict[int, float]: A dictionary mapping miner UIDs to their scores,
+            where the scores have been cut to the maximum allowed weights.
+    """
+
+    if not settings:
+        settings = ValidatorSettings()  # type: ignore
+
+    max_allowed_weights = settings.max_allowed_weights
+    
+    # sort the score by highest to lowest
+    sorted_scores = sorted(score_dict.items(), key=lambda x: x[1], reverse=True)
+
+    # cut to max_allowed_weights
+    cut_scores = sorted_scores[:max_allowed_weights]
+
+    return dict(cut_scores)
 
 def extract_address(string: str):
     """
@@ -148,7 +175,6 @@ class TextValidator(Module):
         self.val_model = "claude-3-opus-20240229"
         self.upload_client = ModuleClient("5.161.229.89", 80, self.key)
 
-
     def get_modules(self, client: CommuneClient, netuid: int) -> dict[int, str]:
         """Retrieves all module addresses from the subnet.
 
@@ -180,19 +206,17 @@ class TextValidator(Module):
         return dataset, criteria, questions_age
 
     def _get_miner_prediction(
-            self, 
-            question: str,
-            miner_info: tuple[list[str], Ss58Address],
-        ) -> str | None:
+        self,
+        question: str,
+        miner_info: tuple[list[str], Ss58Address],
+    ) -> str | None:
         connection, miner_key = miner_info
         module_ip, module_port = connection
         client = ModuleClient(module_ip, int(module_port), self.key)
         try:
             miner_answer = asyncio.run(
-                client.call(
-                    "generate", miner_key, {"prompt": question}, timeout=60
-                    )
-                )
+                client.call("generate", miner_key, {"prompt": question}, timeout=60)
+            )
             miner_answer = miner_answer["answer"]
 
         except Exception as e:
@@ -234,12 +258,12 @@ class TextValidator(Module):
         print(f"Score: {score}, similarity: {sim}")
 
     def _to_hf_data(
-            self, 
-            criteria: Criteria, 
-            subject: str,
-            miner_answer: str,
-            score: float,
-            ):
+        self,
+        criteria: Criteria,
+        subject: str,
+        miner_answer: str,
+        score: float,
+    ):
         hf_data: dict[str, str] = {}
         hf_data["field"] = criteria.field
         hf_data["subject"] = subject
@@ -249,13 +273,10 @@ class TextValidator(Module):
         hf_data["explanation"] = miner_answer
         hf_data["score"] = str(score)
         return hf_data
-    
 
     async def validate_step(
-            self, 
-            settings: ValidatorSettings, 
-            syntia_netuid: int
-            ) -> list[dict[str, str]]:
+        self, settings: ValidatorSettings, syntia_netuid: int
+    ) -> list[dict[str, str]]:
         """Performs a validation step.
 
         Generates questions based on the provided settings, prompts modules to
@@ -270,7 +291,6 @@ class TextValidator(Module):
         modules_adresses = self.get_modules(self.client, syntia_netuid)
         modules_keys = self.client.query_map_key(syntia_netuid)
         modules_info: dict[int, tuple[list[str], Ss58Address]] = {}
-            
 
         modules_filtered_address = get_ip_port(modules_adresses)
         for module_id in modules_keys.keys():
@@ -288,9 +308,7 @@ class TextValidator(Module):
         miner_prompt = get_miner_prompt(criteria, subject, len(val_answer))
         embedded_val_answer = self.embedder.get_embedding(val_answer)
 
-        get_miner_prediction = partial(
-            self._get_miner_prediction, miner_prompt
-        )
+        get_miner_prediction = partial(self._get_miner_prediction, miner_prompt)
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
             it = executor.map(get_miner_prediction, modules_info.values())
             miner_answers = [*it]
@@ -312,7 +330,7 @@ class TextValidator(Module):
             hf_data = self._to_hf_data(
                 criteria,
                 subject,
-                miner_answer, 
+                miner_answer,
                 score,
             )
             hf_data_list.append(hf_data)
@@ -324,9 +342,8 @@ class TextValidator(Module):
         return hf_data_list
 
     def upload_data(
-            self, data: list[dict[str, str]], 
-            hf_uploader_ss58: Ss58Address
-        ) -> None:
+        self, data: list[dict[str, str]], hf_uploader_ss58: Ss58Address
+    ) -> None:
         """Uploads the validation data.
 
         Args:
@@ -340,11 +357,11 @@ class TextValidator(Module):
 
                 _ = asyncio.run(
                     self.upload_client.call(
-                        "upload_to_hugging_face", 
+                        "upload_to_hugging_face",
                         hf_uploader_ss58,
-                        upload_dict, 
-                        )
+                        upload_dict,
                     )
+                )
                 print("UPLOADED DATA")
                 break
             except requests.exceptions.RequestException as e:
