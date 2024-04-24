@@ -101,7 +101,7 @@ Join us on this important journey as we distill the Closed-Source intelligence r
    ```
 
    **Note**: you need to keep this process alive, running in the background. Some
-   options are [tmux](https://www.tmux.org/), [pm2](https://pm2.io/docs/plus/quick-start/) or [nohup](https://en.wikipedia.org/wiki/Nohup).
+   options are [tmux](https://www.tmux.org/](https://ioflood.com/blog/install-tmux-command-linux/)), [pm2](https://pm2.io/docs/plus/quick-start/) or [nohup](https://en.wikipedia.org/wiki/Nohup).
 
    Example using pm2
 
@@ -162,4 +162,4 @@ Join us on this important journey as we distill the Closed-Source intelligence r
    python3 -m synthia.cli <your_commune_key>
    ```
 
-   Note: you need to keep this process alive, running in the background. Some options are [tmux](https://www.tmux.org/), [pm2](https://pm2.io/docs/plus/quick-start/) or [nohup](https://en.wikipedia.org/wiki/Nohup).
+   Note: you need to keep this process alive, running in the background. Some options are [tmux](https://www.tmux.org/](https://ioflood.com/blog/install-tmux-command-linux/)), [pm2](https://pm2.io/docs/plus/quick-start/) or [nohup](https://en.wikipedia.org/wiki/Nohup).
