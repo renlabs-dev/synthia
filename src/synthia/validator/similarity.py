@@ -50,7 +50,7 @@ class OpenAISettings(BaseSettings):
     class Config:
         extra = "allow"
         env_prefix = "OPENAI_"
-        env_file = "env/openai.env"
+        env_file = "env/config.env"
 
 
 @dataclass
