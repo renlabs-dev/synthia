@@ -4,7 +4,6 @@ from rich.console import Console
 from communex._common import get_node_url
 from communex.client import CommuneClient
 from communex.compat.key import classic_load_key
-from communex._common import get_use_testnet
 
 from synthia.validator.text_validator import (
     TextValidator, 
@@ -41,7 +40,6 @@ def serve(
         max_tokens=max_tokens,
         iteration_interval=iteration_interval,
     )
-    get_use_testnet(True)
     c_client = CommuneClient(get_node_url())
     synthia_uid = get_synthia_netuid(c_client)
     validator = TextValidator(keypair, synthia_uid, c_client)
