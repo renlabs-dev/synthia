@@ -4,6 +4,8 @@ from fastapi import HTTPException
 from anthropic import Anthropic, APIError
 from communex.module.module import Module, endpoint  # type: ignore
 from anthropic._types import NotGiven
+import typer
+from communex.key import generate_keypair
 
 from ._config import AnthropicSettings  # Import the AnthropicSettings class from config
 from ..validator.meta_prompt import explanation_prompt
@@ -71,15 +73,10 @@ class AnthropicModule(BaseLLM):
 
 if __name__ == "__main__":
     from communex.module.server import ModuleServer
-    from substrateinterface import Keypair
 
     import uvicorn
-
-    # test key
-    KEY_MNEMONIC = (
-        "electric suffer nephew rough gentle decline fun body tray account vital clinic"
-    )
-    key = Keypair.create_from_mnemonic(KEY_MNEMONIC)
+    key = generate_keypair()
+    print(f"Running module with key {key.ss58_address}")
     claude = AnthropicModule()
     server = ModuleServer(claude, key)
     app = server.get_fastapi_app()
