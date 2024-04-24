@@ -59,19 +59,19 @@ intelligence right into the hands of the Open-Source Community!
 
 1. Get an API key from [Anthropic](https://console.anthropic.com/).
 
-Note: if you have trouble getting an API key from Anthropic or are facing rate-limitting, look for an alternative Claude Opus API such as the official options [Amazon Bedrock](https://docs.anthropic.com/claude/reference/claude-on-amazon-bedrock) or [Vertex AI](https://docs.anthropic.com/claude/reference/claude-on-vertex-ai).
 
-3. Create a file named `config.env` in the `env/` folder with the following
+2. Create a file named `config.env` in the `env/` folder with the following
    contents:
 
    ```sh
-   ANTHROPIC_API_KEY="<your-api-key>"
+   ANTHROPIC_API_KEY="<your-anthropic-api-key>"
    ANTHROPIC_MODEL=claude-3-opus-20240229
    ANTHROPIC_MAX_TOKENS=1000
    ANTHROPIC_TEMPERATURE=0.5
+   OPENAI_API_KEY="<your-openai-api-key>"
    ```
 
-4. Serve the miner:
+3. Serve the miner:
 
    ```sh
    comx module serve synthia.miner.anthropic.AnthropicModule <key> --subnets-whitelist <synthia netuid> --ip 0.0.0.0
@@ -83,7 +83,7 @@ Note: if you have trouble getting an API key from Anthropic or are facing rate-l
    Note: you need to keep this process alive, running in the background. Some
    options are [tmux](https://www.tmux.org/), [pm2](https://pm2.io/docs/plus/quick-start/) or [nohup](https://en.wikipedia.org/wiki/Nohup).
 
-5. Register the module on the Synthia subnet:
+4. Register the module on the Synthia subnet:
 
    ```sh
    comx module register <name> <public-ip> <port> <key> <synthia netuid>
@@ -98,13 +98,13 @@ Note: if you have trouble getting an API key from Anthropic or are facing rate-l
    curl -4 https://ipinfo.io/ip
    ```
 
-- If you are not sure about the `synthia netuid` number:
+- Currently `<synthia netuid>` is 3. If you want to check for yourself, you can run:
 
    ```sh
    comx subnet list
    ```
 
-   Look for the name `synthia` and copy the netuid number.
+   And look for the name `synthia`
 
 ## Running A Validator
 
