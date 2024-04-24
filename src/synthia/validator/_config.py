@@ -18,6 +18,6 @@ class ValidatorSettings(BaseSettings):
 
     class Config:
         env_prefix = "ANTHROPIC_"
-        env_file = None
+        env_file = "env/config.env"
         extra = "ignore"
 
