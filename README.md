@@ -46,8 +46,8 @@ Join us on this important journey as we distill the Closed-Source intelligence r
 
 #### With Docker
 - [Install Docker](https://docs.docker.com/get-docker/)
-- Run `docker pull ghcr.io/agicommies/synthia:0.4`
-- Run `docker run -v ~/.commune:/root/.commune -it [-p <port>:<port>] ghcr.io/agicommies/synthia:0.4`
+- Run `docker pull ghcr.io/agicommies/synthia:0.5.1`
+- Run `docker run -v ~/.commune:/root/.commune -it [-p <port>:<port>] ghcr.io/agicommies/synthia:0.5.1`
 - Run `poetry shell` to enter the enviroment
   
   ##### Operating with docker
@@ -57,7 +57,7 @@ Join us on this important journey as we distill the Closed-Source intelligence r
   - You can list the ids of your containers with `docker ps`
   - Note that you should pass the ports you're going to use to the container (with `-p <port>:<port>`) to bind them to your host machine.
   - You can pass enviroments variables to docker with `-e <VARIABLE>=<value>`.
-    e.g `docker run -e ANTHROPIC_API_KEY=<your-anthropic-api-key> -v ~/.commune:/root/.commune -it ghcr.io/agicommies/synthia:0.4`
+    e.g `docker run -e ANTHROPIC_API_KEY=<your-anthropic-api-key> -v ~/.commune:/root/.commune -it ghcr.io/agicommies/synthia:0.5.1`
 
 #### Manually, on Ubuntu 22.04
 
