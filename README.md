@@ -66,7 +66,7 @@ Join us on this important journey as we distill the Closed-Source intelligence r
 - **! IMPORTANT** Enter the Python environment with `poetry shell` 
 
 #### With Docker
-- Install Docker
+- [Install Docker](https://docs.docker.com/get-docker/)
 - Run `docker pull ghcr.io/agicommies/synthia:0.2`
 - Run `docker run -v <path_to_keys>:/root/.commune ghcr.io/agicommies/synthia:0.2`
 - Run `poetry shell` to enter the enviroment
