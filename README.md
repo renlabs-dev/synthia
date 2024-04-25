@@ -71,7 +71,8 @@ Join us on this important journey as we distill the Closed-Source intelligence r
 - Run `docker run -v <path_to_keys>:/root/.commune ghcr.io/agicommies/synthia:0.1`
 - Run `poetry shell` to enter the enviroment
   
-  You can 
+  Wherever you would need to set a variable on a config file, you can pass it as an enviroment variable to docker instead.
+  e.g `docker run -e ANTHROPIC_API_KEY=<your-anthropic-api-key> -v <path_to_keys>:/root/.commune ghcr.io/agicommies/synthia:0.1`
 
 
 
