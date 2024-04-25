@@ -23,17 +23,11 @@ def serve(
             help="Name of the key present in `~/.commune/key`"
             )
         ],
-    temperature: float = 0.2,
-    max_tokens: int = 1000,
-    iteration_interval: int = 1200,
     call_timeout: int = 60,
 
     ):
     keypair = classic_load_key(commune_key) # type: ignore
     settings = ValidatorSettings(
-        temperature=temperature,
-        max_tokens=max_tokens,
-        iteration_interval=iteration_interval,
     ) #type: ignore
     c_client = CommuneClient(get_node_url())
     synthia_uid = get_synthia_netuid(c_client)
