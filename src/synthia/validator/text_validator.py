@@ -3,6 +3,7 @@ import concurrent.futures
 import re
 import time
 from functools import partial
+import random
 
 import numpy as np
 import requests
@@ -320,6 +321,11 @@ class TextValidator(Module):
         miner_prompt = get_miner_prompt(criteria, subject, len(val_answer))
         embedded_val_answer = self.embedder.get_embedding(val_answer)
 
+        modules_info_keys = [*modules_info.keys()]
+
+        max_population = 20 if 20 <= len(modules_info_keys) else len(modules_info_keys)
+        random_modules_keys = random.choices(modules_info_keys, k=max_population)
+        modules_info = {key: modules_info[key] for key in random_modules_keys}
         get_miner_prediction = partial(self._get_miner_prediction, miner_prompt)
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
             it = executor.map(get_miner_prediction, modules_info.values())
