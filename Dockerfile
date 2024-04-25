@@ -3,7 +3,6 @@ FROM python:3.12.3-bullseye
 SHELL ["/bin/bash", "-c"]
 WORKDIR /app
 COPY src /app/src
-COPY env /app/env
 COPY pyproject.toml /app
 COPY poetry.lock /app
 COPY README.md /app
