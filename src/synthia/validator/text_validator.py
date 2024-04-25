@@ -164,6 +164,7 @@ class TextValidator(Module):
         netuid: int,
         client: CommuneClient,
         embedder: Embedder | None = None,
+        call_timeout: int = 60,
     ) -> None:
         super().__init__()
         self.client = client
@@ -174,6 +175,7 @@ class TextValidator(Module):
         self.embedder = embedder
         self.val_model = "claude-3-opus-20240229"
         self.upload_client = ModuleClient("5.161.229.89", 80, self.key)
+        self.call_timeout = call_timeout
 
     def get_modules(self, client: CommuneClient, netuid: int) -> dict[int, str]:
         """Retrieves all module addresses from the subnet.
@@ -215,7 +217,10 @@ class TextValidator(Module):
         client = ModuleClient(module_ip, int(module_port), self.key)
         try:
             miner_answer = asyncio.run(
-                client.call("generate", miner_key, {"prompt": question}, timeout=60)
+                client.call(
+                    "generate", miner_key, 
+                    {"prompt": question}, timeout=self.call_timeout
+                    )
             )
             miner_answer = miner_answer["answer"]
 
@@ -367,6 +372,7 @@ class TextValidator(Module):
                         "upload_to_hugging_face",
                         hf_uploader_ss58,
                         upload_dict,
+                        timeout=self.call_timeout,
                     )
                 )
                 log("UPLOADED DATA")

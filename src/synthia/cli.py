@@ -26,6 +26,8 @@ def serve(
     temperature: float = 0.2,
     max_tokens: int = 1000,
     iteration_interval: int = 1200,
+    call_timeout: int = 60,
+
     ):
     keypair = classic_load_key(commune_key) # type: ignore
     settings = ValidatorSettings(
@@ -35,7 +37,9 @@ def serve(
     ) #type: ignore
     c_client = CommuneClient(get_node_url())
     synthia_uid = get_synthia_netuid(c_client)
-    validator = TextValidator(keypair, synthia_uid, c_client)
+    validator = TextValidator(
+        keypair, synthia_uid, c_client, call_timeout=call_timeout
+    )
     validator.validation_loop(settings)
 
 if __name__ == "__main__":
