@@ -4,6 +4,7 @@ from anthropic import Anthropic
 from communex.module.module import Module, endpoint  # type: ignore
 from anthropic._types import NotGiven
 from communex.key import generate_keypair  # type: ignore
+from keylimiter import TokenBucketLimiter
 
 from ._config import AnthropicSettings  # Import the AnthropicSettings class from config
 from ..utils import log  # Import the log function from utils
@@ -77,6 +78,10 @@ if __name__ == "__main__":
     key = generate_keypair()
     log(f"Running module with key {key.ss58_address}")
     claude = AnthropicModule()
-    server = ModuleServer(claude, key)
+    refill_rate = 1/400
+    bucket = TokenBucketLimiter(2, refill_rate)
+    server = ModuleServer(
+        claude, key, ip_limiter=bucket, subnets_whitelist=[3]
+        )
     app = server.get_fastapi_app()
     uvicorn.run(app, host="127.0.0.1", port=8000)

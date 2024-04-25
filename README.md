@@ -183,5 +183,6 @@ Join us on this important journey as we distill the Closed-Source intelligence r
    ```sh
    python3 -m synthia.cli <your_commune_key> [--call-timeout <seconds>]
    ```
+   The default value of the `--call-timeout` parameter is 65 seconds.
 
    Note: you need to keep this process alive, running in the background. Some options are [tmux](https://www.tmux.org/](https://ioflood.com/blog/install-tmux-command-linux/)), [pm2](https://pm2.io/docs/plus/quick-start/) or [nohup](https://en.wikipedia.org/wiki/Nohup).

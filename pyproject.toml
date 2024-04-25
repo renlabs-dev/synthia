@@ -29,6 +29,7 @@ huggingface_hub = "^0.19.3"
 python-multipart = "^0.0.5"
 datasets = "^1.14.0"
 slowapi = "^0.1.9"
+keylimiter = "^0.1.5"
 
 [build-system]
 requires = ["poetry-core"]
