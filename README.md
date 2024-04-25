@@ -14,6 +14,7 @@ Welcome to the Synthia subnet, a bleeding-edge initiative to accelerate the open
       - [With Nix](#with-nix)
       - [Manually, on Ubuntu 22.04](#manually-on-ubuntu-2204)
       - [With Docker](#with-docker)
+        - [Operating with docker](#operating-with-docker)
   - [Running A Miner](#running-a-miner)
     - [Note](#note)
   - [Running A Validator](#running-a-validator)
@@ -68,12 +69,14 @@ Join us on this important journey as we distill the Closed-Source intelligence r
 #### With Docker
 - [Install Docker](https://docs.docker.com/get-docker/)
 - Run `docker pull ghcr.io/agicommies/synthia:0.2`
-- Run `docker run -v <path_to_.commune>:/root/.commune -it ghcr.io/agicommies/synthia:0.2`
+- Run `docker run -v ~/.commune:/root/.commune -it ghcr.io/agicommies/synthia:0.2`
 - Run `poetry shell` to enter the enviroment
   
-  Wherever you would need to set a variable on a config file, you can pass it as an enviroment variable to docker instead.
-  e.g `docker run -e ANTHROPIC_API_KEY=<your-anthropic-api-key> -v <path_to_.commune>:/root/.commune -it ghcr.io/agicommies/synthia:0.2`
-
+  ##### Operating with docker
+  - You can quit docker with ctrl+d
+  - You can pass enviroments variables to docker with `-e <VARIABLE>=<value>`.
+  
+    e.g `docker run -e ANTHROPIC_API_KEY=<your-anthropic-api-key> -v ~/.commune:/root/.commune -it ghcr.io/agicommies/synthia:0.2`
 
 
 ## Running A Miner
@@ -89,6 +92,8 @@ Join us on this important journey as we distill the Closed-Source intelligence r
    ANTHROPIC_MAX_TOKENS=1000
    ANTHROPIC_TEMPERATURE=0.5
    ```
+
+   Alternatively, you can set up those values as enviroment variables.
 
 3. Serve the miner:
 
@@ -157,8 +162,11 @@ Join us on this important journey as we distill the Closed-Source intelligence r
    ANTHROPIC_TEMPERATURE=0.5
    OPENAI_API_KEY="<your-openai-api-key>"
    ```
+  
+    Alternatively, you can set up those values as enviroment variables.
+  
 
-4. Register the validator
+1. Register the validator
 
    Note that you are required to register the validator first, this is because the validator has to be on the network in order to set weights. You can do this by running the following command:
 
@@ -168,7 +176,7 @@ Join us on this important journey as we distill the Closed-Source intelligence r
 
    The current synthia **netuid** is **3**.
 
-5. Serve the validator
+2. Serve the validator
 
    ```sh
    python3 -m synthia.cli <your_commune_key>
