@@ -374,6 +374,9 @@ class TextValidator(Module):
             except requests.exceptions.RequestException as e:
                 log(f"Upload attempt {attempt} failed: {e}")
                 attempt += 1
+                if attempt > max_attempts:
+                    print("Could not upload data. ")
+                    break
 
     def validation_loop(self, settings: ValidatorSettings | None = None) -> None:
         if not settings:
