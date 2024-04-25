@@ -69,15 +69,18 @@ Join us on this important journey as we distill the Closed-Source intelligence r
 #### With Docker
 - [Install Docker](https://docs.docker.com/get-docker/)
 - Run `docker pull ghcr.io/agicommies/synthia:0.2`
-- Run `docker run -v ~/.commune:/root/.commune -it ghcr.io/agicommies/synthia:0.2`
+- Run `docker run -v ~/.commune:/root/.commune -it [-p <port>:<port>] ghcr.io/agicommies/synthia:0.2`
 - Run `poetry shell` to enter the enviroment
   
   ##### Operating with docker
   - You can quit docker with ctrl+d
+  - You can dettach from your session with ctrl+p followed by ctrl+q
+  - You can attach back to your session by running `docker attach <id>`
+  - You can list the ids of your containers with `docker ps`
+  - Note that you should pass the ports you're going to use to the container (with `-p <port>:<port>`) to bind them to your host machine.
   - You can pass enviroments variables to docker with `-e <VARIABLE>=<value>`.
-  
     e.g `docker run -e ANTHROPIC_API_KEY=<your-anthropic-api-key> -v ~/.commune:/root/.commune -it ghcr.io/agicommies/synthia:0.2`
-
+  
 
 ## Running A Miner
 
@@ -179,7 +182,7 @@ Join us on this important journey as we distill the Closed-Source intelligence r
 2. Serve the validator
 
    ```sh
-   python3 -m synthia.cli <your_commune_key>
+   python3 -m synthia.cli <your_commune_key> [--call-timeout <seconds>]
    ```
 
    Note: you need to keep this process alive, running in the background. Some options are [tmux](https://www.tmux.org/](https://ioflood.com/blog/install-tmux-command-linux/)), [pm2](https://pm2.io/docs/plus/quick-start/) or [nohup](https://en.wikipedia.org/wiki/Nohup).
