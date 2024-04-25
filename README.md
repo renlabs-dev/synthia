@@ -68,11 +68,11 @@ Join us on this important journey as we distill the Closed-Source intelligence r
 #### With Docker
 - [Install Docker](https://docs.docker.com/get-docker/)
 - Run `docker pull ghcr.io/agicommies/synthia:0.2`
-- Run `docker run -v <path_to_keys>:/root/.commune ghcr.io/agicommies/synthia:0.2`
+- Run `docker run -v <path_to_.commune>:/root/.commune -it ghcr.io/agicommies/synthia:0.2`
 - Run `poetry shell` to enter the enviroment
   
   Wherever you would need to set a variable on a config file, you can pass it as an enviroment variable to docker instead.
-  e.g `docker run -e ANTHROPIC_API_KEY=<your-anthropic-api-key> -v <path_to_keys>:/root/.commune ghcr.io/agicommies/synthia:0.2`
+  e.g `docker run -e ANTHROPIC_API_KEY=<your-anthropic-api-key> -v <path_to_.commune>:/root/.commune -it ghcr.io/agicommies/synthia:0.2`
 
 
 
