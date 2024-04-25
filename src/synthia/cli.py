@@ -23,7 +23,7 @@ def serve(
             help="Name of the key present in `~/.commune/key`"
             )
         ],
-    call_timeout: int = 60,
+    call_timeout: int = 65,
 
     ):
     keypair = classic_load_key(commune_key) # type: ignore
