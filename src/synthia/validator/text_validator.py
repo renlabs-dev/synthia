@@ -321,12 +321,7 @@ class TextValidator(Module):
         subject, val_answer = self._split_val_subject(val_answer)
         miner_prompt = get_miner_prompt(criteria, subject, len(val_answer))
         embedded_val_answer = self.embedder.get_embedding(val_answer)
-
-        modules_info_keys = [*modules_info.keys()]
-
-        max_population = min(20, len(modules_info_keys))
-        random_modules_keys = random.choices(modules_info_keys, k=max_population)
-        modules_info = {key: modules_info[key] for key in random_modules_keys}
+        
         get_miner_prediction = partial(self._get_miner_prediction, miner_prompt)
         log(f"Selected the following miners: {modules_info.keys()}")
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
