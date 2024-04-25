@@ -55,7 +55,10 @@ class AnthropicModule(BaseLLM):
             message_dict["stop_sequence"] is not None
             or message_dict["stop_reason"] != "end_turn"
         ):
-            return None, "Max tokens were not enough to generate an answer"
+            return (
+                None, 
+                f"Could not generate an answer. Stop reason {message_dict['stop_reason']}"
+                )
 
         blocks = message_dict["content"]
         answer = "".join([block["text"] for block in blocks])

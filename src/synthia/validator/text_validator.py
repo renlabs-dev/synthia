@@ -65,6 +65,7 @@ def set_weights(
 
     uids = list(weighted_scores.keys())
     weights = list(weighted_scores.values())
+    log(f"Settings weights for the following uids: {uids}")
     client.vote(key=key, uids=uids, weights=weights, netuid=netuid)
 
 
@@ -323,17 +324,18 @@ class TextValidator(Module):
 
         modules_info_keys = [*modules_info.keys()]
 
-        max_population = 20 if 20 <= len(modules_info_keys) else len(modules_info_keys)
+        max_population = min(20, len(modules_info_keys))
         random_modules_keys = random.choices(modules_info_keys, k=max_population)
         modules_info = {key: modules_info[key] for key in random_modules_keys}
         get_miner_prediction = partial(self._get_miner_prediction, miner_prompt)
+        log(f"Selected the following miners: {modules_info.keys()}")
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
             it = executor.map(get_miner_prediction, modules_info.values())
             miner_answers = [*it]
         for uid, miner_response in zip(modules_info.keys(), miner_answers):
             miner_answer = miner_response
             if not miner_answer:
-                log("Skipping miner that didn't answer")
+                log(f"Skipping miner {uid} that didn't answer")
                 continue
             score = self._score_miner(miner_answer, embedded_val_answer)
             for answer in response_cache:
