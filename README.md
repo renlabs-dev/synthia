@@ -11,10 +11,10 @@ Welcome to the Synthia subnet, a bleeding-edge initiative to accelerate the open
   - [Resources](#resources)
   - [Installation](#installation)
     - [Setup your environment](#setup-your-environment)
-      - [With Nix](#with-nix)
-      - [Manually, on Ubuntu 22.04](#manually-on-ubuntu-2204)
       - [With Docker](#with-docker)
         - [Operating with docker](#operating-with-docker)
+      - [Manually, on Ubuntu 22.04](#manually-on-ubuntu-2204)
+      - [With Nix](#with-nix)
   - [Running A Miner](#running-a-miner)
     - [Note](#note)
   - [Running A Validator](#running-a-validator)
@@ -44,28 +44,6 @@ Join us on this important journey as we distill the Closed-Source intelligence r
 
 ### Setup your environment
 
-#### With Nix
-
-- Install Nix with [install.determinate.systems]
-- You can enter the nix shell environment with with `nix develop` or setup
-  [direnv](https://direnv.net/) to automatically load the environment when you
-  enter the directory.
-- Install the Python dependencies with `poetry install`
-- Get into the Python environment:
-  - If you are using `direnv`, just re-entering the directory will do the trick.
-    - Tip: you can force-reload with `direnv reload`
-  - If not, you can run `poetry shell` to enter the Python environment.
-
-[install.determinate.systems]: https://install.determinate.systems/
-
-#### Manually, on Ubuntu 22.04
-
-- Install Python 3
-  - `sudo apt install python3`
-- [Install Poetry](https://python-poetry.org/docs/)
-- Install the Python dependencies with `poetry install`
-- **! IMPORTANT** Enter the Python environment with `poetry shell` 
-
 #### With Docker
 - [Install Docker](https://docs.docker.com/get-docker/)
 - Run `docker pull ghcr.io/agicommies/synthia:0.2`
@@ -80,7 +58,28 @@ Join us on this important journey as we distill the Closed-Source intelligence r
   - Note that you should pass the ports you're going to use to the container (with `-p <port>:<port>`) to bind them to your host machine.
   - You can pass enviroments variables to docker with `-e <VARIABLE>=<value>`.
     e.g `docker run -e ANTHROPIC_API_KEY=<your-anthropic-api-key> -v ~/.commune:/root/.commune -it ghcr.io/agicommies/synthia:0.2`
-  
+
+#### Manually, on Ubuntu 22.04
+
+- Install Python 3
+  - `sudo apt install python3`
+- [Install Poetry](https://python-poetry.org/docs/)
+- Install the Python dependencies with `poetry install`
+- **! IMPORTANT** Enter the Python environment with `poetry shell` 
+
+#### With Nix
+
+- Install Nix with [install.determinate.systems]
+- You can enter the nix shell environment with with `nix develop` or setup
+  [direnv](https://direnv.net/) to automatically load the environment when you
+  enter the directory.
+- Install the Python dependencies with `poetry install`
+- Get into the Python environment:
+  - If you are using `direnv`, just re-entering the directory will do the trick.
+    - Tip: you can force-reload with `direnv reload`
+  - If not, you can run `poetry shell` to enter the Python environment.
+
+[install.determinate.systems]: https://install.determinate.systems/
 
 ## Running A Miner
 
