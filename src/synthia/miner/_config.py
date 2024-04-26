@@ -10,3 +10,15 @@ class AnthropicSettings(BaseSettings):
         env_prefix = "ANTHROPIC_"
         env_file = "env/config.env"
         extra = "ignore"
+
+
+class OpenrouterSettings(BaseSettings):
+    api_key: str
+    model: str = "anthropic/claude-3-opus"
+    max_tokens: int = 3000
+    temperature: float = 0.5
+
+    class Config:
+        env_prefix = "OPENROUTER_"
+        env_file = "env/config.env"
+        extra = "ignore"
