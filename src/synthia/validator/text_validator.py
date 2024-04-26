@@ -34,8 +34,6 @@ def set_weights(
     """
     Set weights for miners based on their scores.
 
-    The lower the score, the higher the weight.
-
     Args:
         score_dict (dict[int, float]): A dictionary mapping miner UIDs to their scores.
         netuid (int): The network UID.
