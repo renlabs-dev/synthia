@@ -438,33 +438,29 @@ files = [
 
 [[package]]
 name = "communex"
-version = "0.1.15"
+version = "0.1.17"
 description = "A library for Commune network focused on simplicity"
 optional = false
-python-versions = ">=3.10,<4.0"
-files = []
-develop = false
+python-versions = "<4.0,>=3.10"
+files = [
+    {file = "communex-0.1.17-py3-none-any.whl", hash = "sha256:83c143526db711b995ea9cd34e55c04446684dd57c970024b5677ae43e9369e5"},
+    {file = "communex-0.1.17.tar.gz", hash = "sha256:0f60ebf6a2b4d84836de1ca1a5172d3d03a98710a1a52ca8022b69adfbe8af05"},
+]
 
 [package.dependencies]
-aiohttp = "^3.9.3"
-fastapi = "^0.110.0"
-keylimiter = "^0.1.5"
-py-sr25519-bindings = "^0.2.0"
-pydantic = "^2.6.4"
-pydantic-settings = "^2.2.1"
-rich = "^13.7.0"
-scalecodec = "^1.2.7"
-starlette = "^0.36.3"
-substrate-interface = "^1.7.4"
-typeguard = "^4.2.1"
-typer = "^0.9.0"
-uvicorn = "^0.29.0"
-
-[package.source]
-type = "git"
-url = "https://github.com/agicommies/communex.git"
-reference = "feature/timestamp"
-resolved_reference = "828197fea639accceeafb1314bbac095ccd8f225"
+aiohttp = ">=3.9.3,<4.0.0"
+fastapi = ">=0.110.0,<0.111.0"
+keylimiter = ">=0.1.5,<0.2.0"
+py-sr25519-bindings = ">=0.2.0,<0.3.0"
+pydantic = ">=2.6.4,<3.0.0"
+pydantic-settings = ">=2.2.1,<3.0.0"
+rich = ">=13.7.0,<14.0.0"
+scalecodec = ">=1.2.7,<2.0.0"
+starlette = ">=0.36.3,<0.37.0"
+substrate-interface = ">=1.7.4,<2.0.0"
+typeguard = ">=4.2.1,<5.0.0"
+typer = ">=0.9.0,<0.10.0"
+uvicorn = ">=0.29.0,<0.30.0"
 
 [[package]]
 name = "cytoolz"
@@ -4068,4 +4064,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10, <4.0"
-content-hash = "d188a64c70001410d106148e335ae204d2e05710593eba7e9cba241ffa495d0b"
+content-hash = "6384aac1c64b697ff44fc67fc6ed4445ab92b97dcbece6bf1eef665b5abfb26d"
