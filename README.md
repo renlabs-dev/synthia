@@ -18,6 +18,10 @@ Welcome to the Synthia subnet, a bleeding-edge initiative to accelerate the open
   - [Running A Miner](#running-a-miner)
     - [Note](#note)
   - [Running A Validator](#running-a-validator)
+  - [Launcher](#launcher)
+    - [Using the launcher](#using-the-launcher)
+    - [What it does](#what-it-does)
+    - [Video tutorial](#video-tutorial)
 
 ## Overview
 
@@ -186,3 +190,25 @@ Join us on this important journey as we distill the Closed-Source intelligence r
    The default value of the `--call-timeout` parameter is 65 seconds.
 
    Note: you need to keep this process alive, running in the background. Some options are [tmux](https://www.tmux.org/](https://ioflood.com/blog/install-tmux-command-linux/)), [pm2](https://pm2.io/docs/plus/quick-start/) or [nohup](https://en.wikipedia.org/wiki/Nohup).
+
+
+## Launcher
+[Eden](https://twitter.com/project_eden_ai) has provided a new bash script that will walk you through the process of launching a validator or miner for a simpler and streamlined process. 
+
+### Using the launcher
+
+Allow commands to be executed by the script
+`sudo chmod +x launch.sh`
+
+Launch the launcher
+`bash launch.sh`
+
+Just follow the prompts after that
+
+### What it does
+The launch script will prompt you step by step through the process of launching a validator or miner or both and execute the required commands with out having to know the fight command flags or positioning of arguments with the cli. 
+![launcher](assets/launch.png)
+Be aware that the launcher does execute commands that make changes on the block chain including balance transfers and module registration. Be sure you know what you'd like to do before using this tool as some actions cannot be undone. This tool is provided free of charge as is and with no warranty or guarantee. Use at your own risk.
+
+### Video tutorial
+Coming shortly
