@@ -438,13 +438,13 @@ files = [
 
 [[package]]
 name = "communex"
-version = "0.1.17"
+version = "0.1.19"
 description = "A library for Commune network focused on simplicity"
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "communex-0.1.17-py3-none-any.whl", hash = "sha256:83c143526db711b995ea9cd34e55c04446684dd57c970024b5677ae43e9369e5"},
-    {file = "communex-0.1.17.tar.gz", hash = "sha256:0f60ebf6a2b4d84836de1ca1a5172d3d03a98710a1a52ca8022b69adfbe8af05"},
+    {file = "communex-0.1.19-py3-none-any.whl", hash = "sha256:ce576a4240f9c208dda784fefb9234c67740ebddc0b57c80bfecc2351b9289d3"},
+    {file = "communex-0.1.19.tar.gz", hash = "sha256:8bf8dfe68b61929fbf9ed6004277ab8906a08a8b50b4947e0bf2f12bf9c58eb1"},
 ]
 
 [package.dependencies]
@@ -1241,13 +1241,13 @@ testing = ["jaraco.test (>=5.4)", "pytest (>=6)", "pytest-checkdocs (>=2.4)", "p
 
 [[package]]
 name = "keras"
-version = "3.3.2"
+version = "3.3.3"
 description = "Multi-backend Keras."
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "keras-3.3.2-py3-none-any.whl", hash = "sha256:ed7e4c980b29e78223526dfb3bd83872ec5049e5d1e7006394ec6ad98a5cba2d"},
-    {file = "keras-3.3.2.tar.gz", hash = "sha256:e7e2ccba2dfe2cf10b82e3c75ea971b82a4c62560dc562c43b33f7790127c92f"},
+    {file = "keras-3.3.3-py3-none-any.whl", hash = "sha256:260df9ef71c6b89eb6816ce1c60f139c38ccdddd16f24e7005d2be127cdef8e4"},
+    {file = "keras-3.3.3.tar.gz", hash = "sha256:f2fdffc8434fd77045cf8fb21816dbaa2308d5f76974ca924b2f60b40433b1a0"},
 ]
 
 [package.dependencies]
@@ -4064,4 +4064,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10, <4.0"
-content-hash = "6384aac1c64b697ff44fc67fc6ed4445ab92b97dcbece6bf1eef665b5abfb26d"
+content-hash = "9f62fc9501228388ac4a52f0596ef3fb886a9ee7a4a28936b1afa1d0490f22c0"
