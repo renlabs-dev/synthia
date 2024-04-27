@@ -42,6 +42,9 @@ Join us on this important journey as we distill the Closed-Source intelligence r
 
 ## Installation
 
+Make sure you are on the latest CommuneX version. 
+`pip install communex --upgrade`
+
 ### Setup your environment
 
 #### With Docker
