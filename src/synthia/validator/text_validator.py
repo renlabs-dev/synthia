@@ -4,6 +4,7 @@ import re
 import time
 from functools import partial
 import random
+from enum import Enum
 
 import numpy as np
 import requests
@@ -15,8 +16,8 @@ from communex.types import Ss58Address  # type: ignore
 from fuzzywuzzy import fuzz  # type: ignore
 from substrateinterface import Keypair  # type: ignore
 
-from ..miner._config import AnthropicSettings
-from ..miner.anthropic import AnthropicModule
+from ..miner._config import AnthropicSettings, OpenrouterSettings
+from ..miner.anthropic import AnthropicModule, OpenrouterModule
 from ..utils import retry, log
 from ._config import ValidatorSettings
 from .generate_data import InputGenerator
@@ -33,8 +34,6 @@ def set_weights(
 ) -> None:
     """
     Set weights for miners based on their scores.
-
-    The lower the score, the higher the weight.
 
     Args:
         score_dict (dict[int, float]): A dictionary mapping miner UIDs to their scores.
@@ -129,6 +128,10 @@ def get_ip_port(modules_adresses: dict[int, str]):
     }
     return ip_port
 
+class ClaudeProviders(Enum):
+    ANTHROPIC  = "anthropic"
+    OPENROUTER = "openrouter"
+
 
 class TextValidator(Module):
     """A class for validating text data using a Synthia network.
@@ -165,6 +168,7 @@ class TextValidator(Module):
         key: Keypair,
         netuid: int,
         client: CommuneClient,
+        provider: ClaudeProviders = ClaudeProviders.OPENROUTER,
         embedder: Embedder | None = None,
         call_timeout: int = 60,
     ) -> None:
@@ -178,6 +182,7 @@ class TextValidator(Module):
         self.val_model = "claude-3-opus-20240229"
         self.upload_client = ModuleClient("5.161.229.89", 80, self.key)
         self.call_timeout = call_timeout
+        self.provider = provider
 
     def get_modules(self, client: CommuneClient, netuid: int) -> dict[int, str]:
         """Retrieves all module addresses from the subnet.
@@ -193,11 +198,23 @@ class TextValidator(Module):
         return module_addreses
 
     def _get_validation_dataset(self, settings: ValidatorSettings):
-        claude_settings = AnthropicSettings()  # type: ignore
-        claude_settings.temperature = settings.temperature
-        claude_settings.max_tokens = settings.max_tokens
-        claude_settings.model = self.val_model
-        claude = AnthropicModule(claude_settings)
+        
+        # TODO: make ValidatorSettings and the miners settings inherit from a
+        # common protocol
+        match self.provider:
+            case ClaudeProviders.ANTHROPIC:
+                claude_settings = AnthropicSettings()  # type: ignore
+                claude_settings.temperature = settings.temperature
+                claude_settings.max_tokens = settings.max_tokens
+                claude_settings.model = self.val_model
+                claude = AnthropicModule(claude_settings)
+            case ClaudeProviders.OPENROUTER:
+                claude_settings = OpenrouterSettings()  # type: ignore
+                claude_settings.temperature = settings.temperature
+                claude_settings.max_tokens = settings.max_tokens
+                claude_settings.model = self.val_model
+                claude = OpenrouterModule(claude_settings)
+        
         ig = InputGenerator(claude)
 
         retrier = retry(4, [Exception])

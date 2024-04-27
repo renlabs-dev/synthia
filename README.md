@@ -46,12 +46,15 @@ Join us on this important journey as we distill the Closed-Source intelligence r
 
 ## Installation
 
+Make sure you are on the latest CommuneX version. 
+`pip install communex --upgrade`
+
 ### Setup your environment
 
 #### With Docker
 - [Install Docker](https://docs.docker.com/get-docker/)
-- Run `docker pull ghcr.io/agicommies/synthia:0.5.1`
-- Run `docker run -v ~/.commune:/root/.commune -it [-p <port>:<port>] ghcr.io/agicommies/synthia:0.5.1`
+- Run `docker pull ghcr.io/agicommies/synthia:33b8ed8`
+- Run `docker run -v ~/.commune:/root/.commune -it [-p <port>:<port>] ghcr.io/agicommies/synthia:33b8ed8`
 - Run `poetry shell` to enter the enviroment
   
   ##### Operating with docker
@@ -61,7 +64,7 @@ Join us on this important journey as we distill the Closed-Source intelligence r
   - You can list the ids of your containers with `docker ps`
   - Note that you should pass the ports you're going to use to the container (with `-p <port>:<port>`) to bind them to your host machine.
   - You can pass enviroments variables to docker with `-e <VARIABLE>=<value>`.
-    e.g `docker run -e ANTHROPIC_API_KEY=<your-anthropic-api-key> -v ~/.commune:/root/.commune -it ghcr.io/agicommies/synthia:0.5.1`
+    e.g `docker run -e ANTHROPIC_API_KEY=<your-anthropic-api-key> -v ~/.commune:/root/.commune -it ghcr.io/agicommies/synthia:33b8ed8`
 
 #### Manually, on Ubuntu 22.04
 
@@ -94,12 +97,15 @@ Join us on this important journey as we distill the Closed-Source intelligence r
 
    ```sh
    ANTHROPIC_API_KEY="<your-anthropic-api-key>"
+   OPENROUTER_API_KEY="<your-openrouter-api-key>"
    ANTHROPIC_MODEL=claude-3-opus-20240229
    ANTHROPIC_MAX_TOKENS=1000
    ANTHROPIC_TEMPERATURE=0.5
    ```
 
    Alternatively, you can set up those values as enviroment variables.
+   Note that you just need to provide the key to the provider that you're going
+   to use
 
 3. Serve the miner:
 
@@ -115,6 +121,12 @@ Join us on this important journey as we distill the Closed-Source intelligence r
    comx module serve synthia.miner.anthropic.AnthropicModule <your_commune_key> --subnets-whitelist <synthia netuid> --ip 0.0.0.0
    ```
 
+  Alternatively, if you want to run a openrouter miner:
+
+   ```sh
+   comx module serve synthia.miner.anthropic.OpenrouterModule <your_commune_key> --subnets-whitelist <synthia netuid> --ip 0.0.0.0
+   ```
+  
    The **ip** is passed as **0.0.0.0** to accept **outside connections**, since the default,
    **127.0.0.1** accepts **only local** connections. Synthia has the **netuid 3**. Key is a name of your commune wallet/key.
    If you don't have a wallet, generate one by running
@@ -163,6 +175,7 @@ Join us on this important journey as we distill the Closed-Source intelligence r
 
    ```sh
    ANTHROPIC_API_KEY="<your-anthropic-claude-api-key>"
+   OPENROUTER_API_KEY="<your-openrouter-api-key>"
    ANTHROPIC_MODEL=claude-3-opus-20240229
    ANTHROPIC_MAX_TOKENS=1000
    ANTHROPIC_TEMPERATURE=0.5
@@ -185,9 +198,10 @@ Join us on this important journey as we distill the Closed-Source intelligence r
 2. Serve the validator
 
    ```sh
-   python3 -m synthia.cli <your_commune_key> [--call-timeout <seconds>]
+   python3 -m synthia.cli <your_commune_key> [--call-timeout <seconds>] [--provider <provider_name>]
    ```
    The default value of the `--call-timeout` parameter is 65 seconds.
+   You can pass --provider openrouter to run using openrouter provider
 
    Note: you need to keep this process alive, running in the background. Some options are [tmux](https://www.tmux.org/](https://ioflood.com/blog/install-tmux-command-linux/)), [pm2](https://pm2.io/docs/plus/quick-start/) or [nohup](https://en.wikipedia.org/wiki/Nohup).
 
