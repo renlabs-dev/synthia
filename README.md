@@ -211,10 +211,10 @@ Make sure you are on the latest CommuneX version.
 ### Using the launcher
 
 Allow commands to be executed by the script:
-`chmod +x launch.sh`
+`chmod +x scripts/launch.sh`
 
 Run the launcher:
-`bash launch.sh`
+`bash scripts/launch.sh`
 
 Just follow the prompts after that.
 
