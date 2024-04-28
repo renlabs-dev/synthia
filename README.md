@@ -183,7 +183,6 @@ Make sure you are on the latest CommuneX version.
    ```
   
     Alternatively, you can set up those values as enviroment variables.
-  
 
 1. Register the validator
 
@@ -205,24 +204,30 @@ Make sure you are on the latest CommuneX version.
 
    Note: you need to keep this process alive, running in the background. Some options are [tmux](https://www.tmux.org/](https://ioflood.com/blog/install-tmux-command-linux/)), [pm2](https://pm2.io/docs/plus/quick-start/) or [nohup](https://en.wikipedia.org/wiki/Nohup).
 
+## Launcher Script
 
-## Launcher
-[Eden](https://twitter.com/project_eden_ai) has provided a new bash script that will walk you through the process of launching a validator or miner for a simpler and streamlined process. 
+[Eden](https://twitter.com/project_eden_ai) has provided a new bash script that will walk you through the process of launching a validator or miner for a simpler and streamlined process.
 
 ### Using the launcher
 
-Allow commands to be executed by the script
-`sudo chmod +x launch.sh`
+Allow commands to be executed by the script:
+`chmod +x launch.sh`
 
-Launch the launcher
+Run the launcher:
 `bash launch.sh`
 
-Just follow the prompts after that
+Just follow the prompts after that.
 
 ### What it does
-The launch script will prompt you step by step through the process of launching a validator or miner or both and execute the required commands with out having to know the fight command flags or positioning of arguments with the cli. 
+
+The launch script will prompt you step by step through the process of launching
+a validator or miner or both and execute the required commands without having
+to know details about the CLI.
+
 ![launcher](assets/launch.png)
+
 Be aware that the launcher does execute commands that make changes on the block chain including balance transfers and module registration. Be sure you know what you'd like to do before using this tool as some actions cannot be undone. This tool is provided free of charge as is and with no warranty or guarantee. Use at your own risk.
 
 ### Video tutorial
-Coming shortly
+
+Coming shortly.
