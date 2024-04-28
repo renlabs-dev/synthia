@@ -18,7 +18,7 @@ Welcome to the Synthia subnet, a bleeding-edge initiative to accelerate the open
   - [Running A Miner](#running-a-miner)
     - [Note](#note)
   - [Running A Validator](#running-a-validator)
-  - [Launcher](#launcher)
+  - [Launcher Script](#launcher-script)
     - [Using the launcher](#using-the-launcher)
     - [What it does](#what-it-does)
     - [Video tutorial](#video-tutorial)
@@ -46,25 +46,30 @@ Join us on this important journey as we distill the Closed-Source intelligence r
 
 ## Installation
 
-Make sure you are on the latest CommuneX version. 
-`pip install communex --upgrade`
+Make sure you are on the latest CommuneX version.
+
+```sh
+pip install communex --upgrade
+```
 
 ### Setup your environment
 
 #### With Docker
+
 - [Install Docker](https://docs.docker.com/get-docker/)
 - Run `docker pull ghcr.io/agicommies/synthia:33b8ed8`
 - Run `docker run -v ~/.commune:/root/.commune -it [-p <port>:<port>] ghcr.io/agicommies/synthia:33b8ed8`
 - Run `poetry shell` to enter the enviroment
   
-  ##### Operating with docker
-  - You can quit docker with ctrl+d
-  - You can dettach from your session with ctrl+p followed by ctrl+q
-  - You can attach back to your session by running `docker attach <id>`
-  - You can list the ids of your containers with `docker ps`
-  - Note that you should pass the ports you're going to use to the container (with `-p <port>:<port>`) to bind them to your host machine.
-  - You can pass enviroments variables to docker with `-e <VARIABLE>=<value>`.
-    e.g `docker run -e ANTHROPIC_API_KEY=<your-anthropic-api-key> -v ~/.commune:/root/.commune -it ghcr.io/agicommies/synthia:33b8ed8`
+##### Operating with docker
+
+- You can quit docker with ctrl+d
+- You can dettach from your session with ctrl+p followed by ctrl+q
+- You can attach back to your session by running `docker attach <id>`
+- You can list the ids of your containers with `docker ps`
+- Note that you should pass the ports you're going to use to the container (with `-p <port>:<port>`) to bind them to your host machine.
+- You can pass enviroments variables to docker with `-e <VARIABLE>=<value>`.
+  e.g `docker run -e ANTHROPIC_API_KEY=<your-anthropic-api-key> -v ~/.commune:/root/.commune -it ghcr.io/agicommies/synthia:33b8ed8`
 
 #### Manually, on Ubuntu 22.04
 
@@ -72,7 +77,7 @@ Make sure you are on the latest CommuneX version.
   - `sudo apt install python3`
 - [Install Poetry](https://python-poetry.org/docs/)
 - Install the Python dependencies with `poetry install`
-- **! IMPORTANT** Enter the Python environment with `poetry shell` 
+- **! IMPORTANT** Enter the Python environment with `poetry shell`
 
 #### With Nix
 
@@ -121,7 +126,7 @@ Make sure you are on the latest CommuneX version.
    comx module serve synthia.miner.anthropic.AnthropicModule <your_commune_key> --subnets-whitelist <synthia netuid> --ip 0.0.0.0
    ```
 
-  Alternatively, if you want to run a openrouter miner:
+    Alternatively, if you want to run a openrouter miner:
 
    ```sh
    comx module serve synthia.miner.anthropic.OpenrouterModule <your_commune_key> --subnets-whitelist <synthia netuid> --ip 0.0.0.0
@@ -131,7 +136,7 @@ Make sure you are on the latest CommuneX version.
    **127.0.0.1** accepts **only local** connections. Synthia has the **netuid 3**. Key is a name of your commune wallet/key.
    If you don't have a wallet, generate one by running
 
-   ```bash
+   ```sh
    comx key create <name>
    ```
 
@@ -140,15 +145,15 @@ Make sure you are on the latest CommuneX version.
 
    Example using pm2
 
-   ```bash
+   ```sh
    pm2 start "comx module serve synthia.miner.anthropic.AnthropicModule <key> --subnets-whitelist <synthia netuid> --ip 0.0.0.0" --name <name>
    ```
 
 4. Finally register the module on the Synthia subnet:
 
-   ```sh
-   comx module register <name> <your_commune_key> --ip <your-ip-address> --port <port> --netuid <synthia netuid>  
-   ```
+    ```sh
+    comx module register <name> <your_commune_key> --ip <your-ip-address> --port <port> --netuid <synthia netuid>  
+    ```
 
 ### Note
 
@@ -170,7 +175,9 @@ Make sure you are on the latest CommuneX version.
 ## Running A Validator
 
 1. Get an API key from [Anthropic](https://console.anthropic.com/).
+
 2. Gen an API key for embeddings from [OpenAi](https://openai.com/product)
+
 3. Create a file named `config.env` in the `env/` folder with the following contents (you can also see the `env/config.env.sample` as an example):
 
    ```sh
@@ -184,7 +191,7 @@ Make sure you are on the latest CommuneX version.
   
     Alternatively, you can set up those values as enviroment variables.
 
-1. Register the validator
+4. Register the validator
 
    Note that you are required to register the validator first, this is because the validator has to be on the network in order to set weights. You can do this by running the following command:
 
@@ -194,11 +201,12 @@ Make sure you are on the latest CommuneX version.
 
    The current synthia **netuid** is **3**.
 
-2. Serve the validator
+5. Serve the validator
 
    ```sh
    python3 -m synthia.cli <your_commune_key> [--call-timeout <seconds>] [--provider <provider_name>]
    ```
+
    The default value of the `--call-timeout` parameter is 65 seconds.
    You can pass --provider openrouter to run using openrouter provider
 
