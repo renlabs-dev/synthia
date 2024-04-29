@@ -57,10 +57,11 @@ pip install communex --upgrade
 #### With Docker
 
 - [Install Docker](https://docs.docker.com/get-docker/)
-- Run `docker pull ghcr.io/agicommies/synthia:33b8ed8`
-- Run `docker run -v ~/.commune:/root/.commune -it [-p <port>:<port>] ghcr.io/agicommies/synthia:33b8ed8`
+- Run `docker pull ghcr.io/agicommies/synthia:a039609`
+- Run `docker run -v ~/.commune:/root/.commune -it [-p <port>:<port>] ghcr.io/agicommies/synthia:a039609`
 - Run `poetry shell` to enter the enviroment
   
+<<<<<<< HEAD
 ##### Operating with docker
 
 - You can quit docker with ctrl+d
@@ -70,6 +71,16 @@ pip install communex --upgrade
 - Note that you should pass the ports you're going to use to the container (with `-p <port>:<port>`) to bind them to your host machine.
 - You can pass enviroments variables to docker with `-e <VARIABLE>=<value>`.
   e.g `docker run -e ANTHROPIC_API_KEY=<your-anthropic-api-key> -v ~/.commune:/root/.commune -it ghcr.io/agicommies/synthia:33b8ed8`
+=======
+  ##### Operating with docker
+  - You can quit docker with ctrl+d
+  - You can dettach from your session with ctrl+p followed by ctrl+q
+  - You can attach back to your session by running `docker attach <id>`
+  - You can list the ids of your containers with `docker ps`
+  - Note that you should pass the ports you're going to use to the container (with `-p <port>:<port>`) to bind them to your host machine.
+  - You can pass enviroments variables to docker with `-e <VARIABLE>=<value>`.
+    e.g `docker run -e ANTHROPIC_API_KEY=<your-anthropic-api-key> -v ~/.commune:/root/.commune -it ghcr.io/agicommies/synthia:a039609`
+>>>>>>> :memo: updated docker image tag
 
 #### Manually, on Ubuntu 22.04
 
