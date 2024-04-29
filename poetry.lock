@@ -438,13 +438,13 @@ files = [
 
 [[package]]
 name = "communex"
-version = "0.1.19"
+version = "0.1.20"
 description = "A library for Commune network focused on simplicity"
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "communex-0.1.19-py3-none-any.whl", hash = "sha256:ce576a4240f9c208dda784fefb9234c67740ebddc0b57c80bfecc2351b9289d3"},
-    {file = "communex-0.1.19.tar.gz", hash = "sha256:8bf8dfe68b61929fbf9ed6004277ab8906a08a8b50b4947e0bf2f12bf9c58eb1"},
+    {file = "communex-0.1.20-py3-none-any.whl", hash = "sha256:0ae73a7f23db6934f01665f95c98235db53768393c280f62417f6b31b8a9d302"},
+    {file = "communex-0.1.20.tar.gz", hash = "sha256:223a0d0029cd505dd23ebbe093843159b601009095883ebfb66633406b68c7ba"},
 ]
 
 [package.dependencies]
@@ -723,13 +723,13 @@ test = ["asn1tools (>=0.146.2)", "eth-hash[pysha3]", "factory-boy (>=3.0.1)", "h
 
 [[package]]
 name = "eth-typing"
-version = "4.2.1"
+version = "4.2.2"
 description = "eth-typing: Common type annotations for ethereum python packages"
 optional = false
 python-versions = "<4,>=3.8"
 files = [
-    {file = "eth_typing-4.2.1-py3-none-any.whl", hash = "sha256:0e05be775e9a7b9aa66a1520fce41adacdf47680fb4344cfb4f4a0e7eab752b2"},
-    {file = "eth_typing-4.2.1.tar.gz", hash = "sha256:0e7108fdc937f4b5d6352f71591f694f0b0a62162cddeb9bbc9b157fd700ba3f"},
+    {file = "eth_typing-4.2.2-py3-none-any.whl", hash = "sha256:2d23c44b78b1740ee881aa5c440a05a5e311ca44d1defa18a334e733df46ff3f"},
+    {file = "eth_typing-4.2.2.tar.gz", hash = "sha256:051ab9783e350668487ffc635b19666e7ca4d6c7e572800ed3961cbe0a937772"},
 ]
 
 [package.extras]
@@ -795,13 +795,13 @@ all = ["email-validator (>=2.0.0)", "httpx (>=0.23.0)", "itsdangerous (>=1.1.0)"
 
 [[package]]
 name = "filelock"
-version = "3.13.4"
+version = "3.14.0"
 description = "A platform independent file lock."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "filelock-3.13.4-py3-none-any.whl", hash = "sha256:404e5e9253aa60ad457cae1be07c0f0ca90a63931200a47d9b6a6af84fd7b45f"},
-    {file = "filelock-3.13.4.tar.gz", hash = "sha256:d13f466618bfde72bd2c18255e269f72542c6e70e7bac83a0232d6b1cc5c8cf4"},
+    {file = "filelock-3.14.0-py3-none-any.whl", hash = "sha256:43339835842f110ca7ae60f1e1c160714c5a6afd15a2873419ab185334975c0f"},
+    {file = "filelock-3.14.0.tar.gz", hash = "sha256:6ea72da3be9b8c82afd3edcf99f2fffbb5076335a5ae4d03248bb5b6c3eae78a"},
 ]
 
 [package.extras]
@@ -1843,6 +1843,7 @@ optional = false
 python-versions = ">=3.9"
 files = [
     {file = "pandas-2.2.2-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:90c6fca2acf139569e74e8781709dccb6fe25940488755716d1d354d6bc58bce"},
+    {file = "pandas-2.2.2-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:c7adfc142dac335d8c1e0dcbd37eb8617eac386596eb9e1a1b77791cf2498238"},
     {file = "pandas-2.2.2-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:4abfe0be0d7221be4f12552995e58723c7422c80a659da13ca382697de830c08"},
     {file = "pandas-2.2.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8635c16bf3d99040fdf3ca3db669a7250ddf49c55dc4aa8fe0ae0fa8d6dcc1f0"},
     {file = "pandas-2.2.2-cp310-cp310-musllinux_1_1_aarch64.whl", hash = "sha256:40ae1dffb3967a52203105a077415a86044a2bea011b5f321c6aa64b379a3f51"},
@@ -1863,6 +1864,7 @@ files = [
     {file = "pandas-2.2.2-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:43498c0bdb43d55cb162cdc8c06fac328ccb5d2eabe3cadeb3529ae6f0517c32"},
     {file = "pandas-2.2.2-cp312-cp312-win_amd64.whl", hash = "sha256:d187d355ecec3629624fccb01d104da7d7f391db0311145817525281e2804d23"},
     {file = "pandas-2.2.2-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:0ca6377b8fca51815f382bd0b697a0814c8bda55115678cbc94c30aacbb6eff2"},
+    {file = "pandas-2.2.2-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:9057e6aa78a584bc93a13f0a9bf7e753a5e9770a30b4d758b8d5f2a62a9433cd"},
     {file = "pandas-2.2.2-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:001910ad31abc7bf06f49dcc903755d2f7f3a9186c0c040b827e522e9cef0863"},
     {file = "pandas-2.2.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:66b479b0bd07204e37583c191535505410daa8df638fd8e75ae1b383851fe921"},
     {file = "pandas-2.2.2-cp39-cp39-musllinux_1_1_aarch64.whl", hash = "sha256:a77e9d1c386196879aa5eb712e77461aaee433e54c68cf253053a73b7e49c33a"},
@@ -3982,4 +3984,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10, <4.0"
-content-hash = "5650ef549d03a89228c5cde394b03ebdece83f41dae64118c055d67b22c024cf"
+content-hash = "592a54acb53c09454d62d19b6bddeafe26c36bc9d0e11842e59a5358a0f9edc8"
