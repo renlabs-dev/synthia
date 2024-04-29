@@ -438,13 +438,13 @@ files = [
 
 [[package]]
 name = "communex"
-version = "0.1.20"
+version = "0.1.21"
 description = "A library for Commune network focused on simplicity"
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "communex-0.1.20-py3-none-any.whl", hash = "sha256:0ae73a7f23db6934f01665f95c98235db53768393c280f62417f6b31b8a9d302"},
-    {file = "communex-0.1.20.tar.gz", hash = "sha256:223a0d0029cd505dd23ebbe093843159b601009095883ebfb66633406b68c7ba"},
+    {file = "communex-0.1.21-py3-none-any.whl", hash = "sha256:e1653de639204afb7b5f86e773eb3f5fb1201a63b6c6686a079478dc83fe8786"},
+    {file = "communex-0.1.21.tar.gz", hash = "sha256:991225a865922619b298b45bb160dc6076597eca087b7bdd0ef6f4029cbc8347"},
 ]
 
 [package.dependencies]
@@ -3984,4 +3984,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10, <4.0"
-content-hash = "592a54acb53c09454d62d19b6bddeafe26c36bc9d0e11842e59a5358a0f9edc8"
+content-hash = "03df0b7ccdc59f22705a8b1ae462140a2c0330b8c4e7aabe5af4d3ed1b755622"
