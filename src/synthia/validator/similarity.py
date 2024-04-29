@@ -7,7 +7,7 @@ import openai
 import numpy
 from transformers import pipeline, Pipeline  # type: ignore
 
-from ..utils import log
+# from ..utils import log
 
 
 def _do_debug():  # type: ignore
@@ -85,17 +85,17 @@ class OpenAIEmbedder(Embedder):
         return embedding
 
 
-class JairiumDistancer(Distancer):
-    def __init__(self) -> None:
-        import gensim.downloader as gensim_api  # type: ignore
+# class JairiumDistancer(Distancer):
+#     def __init__(self) -> None:
+#         import gensim.downloader as gensim_api  # type: ignore
 
-        super().__init__()
-        word_vectors = gensim_api.load("glove-wiki-gigaword-100")  # type: ignore
-        self.word_vectors = word_vectors
+#         super().__init__()
+#         word_vectors = gensim_api.load("glove-wiki-gigaword-100")  # type: ignore
+#         self.word_vectors = word_vectors
 
-    def get_distance(self, input_1: str, input_2: str) -> float:
-        dist: float = self.word_vectors.wmdistance(input_1, input_2)  # type: ignore
-        return dist  # type: ignore
+#     def get_distance(self, input_1: str, input_2: str) -> float:
+#         dist: float = self.word_vectors.wmdistance(input_1, input_2)  # type: ignore
+#         return dist  # type: ignore
 
 
 def do_classify(classifier: Pipeline, text: str) -> str | None:
@@ -131,35 +131,35 @@ def euclidean_distance(list_1: list[float], list_2: list[float]) -> float:
     return float(norm)
 
 
-def main(openai_settings: OpenAISettings):
-    import numpy as np
+# def main(openai_settings: OpenAISettings):
+#     import numpy as np
 
-    openai_embedder = OpenAIEmbedder(openai_settings)
-    distancer = JairiumDistancer()
-    ai_dist_list: list[Any] = []
-    dist_dist_list: list[Any] = []
-    classider = get_classifier()
-    for example_items in examples:
-        # Before validating with embedder,
-        # make sure the text is not classified as gibberish (nonsense).
-        is_classified = list(map(lambda x: do_classify(classider, x), example_items))
-        # if it is, skip it
-        if None in is_classified:
-            continue
+#     openai_embedder = OpenAIEmbedder(openai_settings)
+#     distancer = JairiumDistancer()
+#     ai_dist_list: list[Any] = []
+#     dist_dist_list: list[Any] = []
+#     classider = get_classifier()
+#     for example_items in examples:
+#         # Before validating with embedder,
+#         # make sure the text is not classified as gibberish (nonsense).
+#         is_classified = list(map(lambda x: do_classify(classider, x), example_items))
+#         # if it is, skip it
+#         if None in is_classified:
+#             continue
 
-        embeddings = list(map(openai_embedder.get_embedding, example_items))
-        embedding_a, embedding_b = embeddings
-        ai_dist = euclidean_distance(embedding_a, embedding_b)
-        ai_dist_list.append(ai_dist)
-        # log(f"  AI_DIST: {ai_dist:.4f}")
+#         embeddings = list(map(openai_embedder.get_embedding, example_items))
+#         embedding_a, embedding_b = embeddings
+#         ai_dist = euclidean_distance(embedding_a, embedding_b)
+#         ai_dist_list.append(ai_dist)
+#         # log(f"  AI_DIST: {ai_dist:.4f}")
 
-        example_a, example_b = example_items
-        dist = distancer.get_distance(example_a, example_b)
-        dist_dist_list.append(dist)
-        # log(f"DIST_DIST: {dist:.4f}")
+#         example_a, example_b = example_items
+#         dist = distancer.get_distance(example_a, example_b)
+#         dist_dist_list.append(dist)
+#         # log(f"DIST_DIST: {dist:.4f}")
 
-    log(f"AI_DIST: {np.array(ai_dist_list)/sum(ai_dist_list)}")
-    log(f"DIST_DIST: {np.array(dist_dist_list)/sum(dist_dist_list)}")
+#     log(f"AI_DIST: {np.array(ai_dist_list)/sum(ai_dist_list)}")
+#     log(f"DIST_DIST: {np.array(dist_dist_list)/sum(dist_dist_list)}")
 
     # for example_items in examples:
     # embedding_a, embedding_b = embeddings
