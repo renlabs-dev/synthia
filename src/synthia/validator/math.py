@@ -22,7 +22,7 @@ def threshold_sigmoid_reward_distribution(score_dict: dict[int, float]) -> dict[
     threshold = mean_score * (1 + threshold_percentage)
 
    
-    steepness = 20.0  # steepness for sharper punishment
+    steepness = 5.0  # steepness for sharper punishment
 
     # Set the high and low rewards
     high_reward = 1.0
