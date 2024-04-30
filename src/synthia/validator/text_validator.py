@@ -23,7 +23,7 @@ from ._config import ValidatorSettings
 from .generate_data import InputGenerator
 from .meta_prompt import get_miner_prompt, Criteria
 from .similarity import Embedder, OpenAIEmbedder, OpenAISettings, euclidean_distance
-from .math import threshold_sigmoid_reward_distribution
+from .sigmoid import threshold_sigmoid_reward_distribution
 
 # TODO: make it match ipv6
 IP_REGEX = re.compile(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d+")
@@ -54,7 +54,7 @@ def set_weights(
     # Iterate over the items in the score_dict
     for uid, score in adjsuted_to_sigmoid.items():
         # Calculate the normalized weight as an integer
-        weight = int(score / scores * 100)
+        weight = int(score * 1000 / scores)
 
         # Add the weighted score to the new dictionary
         weighted_scores[uid] = weight
@@ -233,6 +233,7 @@ class TextValidator(Module):
     ) -> str | None:
         connection, miner_key = miner_info
         module_ip, module_port = connection
+
         client = ModuleClient(module_ip, int(module_port), self.key)
         try:
             miner_answer = asyncio.run(
@@ -247,6 +248,7 @@ class TextValidator(Module):
             log(f"Miner {module_ip}:{module_port} failed to generate an answer")
             print(e)
             miner_answer = None
+
         return miner_answer
 
     def _get_unit_euclid_distance(
@@ -355,7 +357,6 @@ class TextValidator(Module):
                 log(f"similarity: {similarity}")
             response_cache.append(miner_answer)
 
-            time.sleep(0.5)
             # score has to be lower or eq to 1, as one is the best score
             assert score <= 1
             score_dict[uid] = score
@@ -421,3 +422,4 @@ class TextValidator(Module):
                 sleep_time = settings.iteration_interval - elapsed
                 log(f"Sleeping for {sleep_time}")
                 time.sleep(sleep_time)
+
