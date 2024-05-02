@@ -237,4 +237,4 @@ Be aware that the launcher does execute commands that make changes on the block 
 
 ### Video tutorial
 
-Coming shortly.
+[Video tutorial](https://www.youtube.com/watch?v=3CynHZdvbok)
