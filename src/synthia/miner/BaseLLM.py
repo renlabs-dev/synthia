@@ -42,7 +42,8 @@ class BaseLLM(ABC, Module):
         try:
             message = self.prompt(prompt, self.get_context_prompt(self.max_tokens))
         except Exception as e:
-            raise HTTPException(status_code=e.status_code, detail=str(e)) from e  # type: ignore
+            status_code = getattr(e, 'status_code', 500)
+            raise HTTPException(status_code=status_code, detail=str(e)) from e
 
         match message:
             case None, explanation:
