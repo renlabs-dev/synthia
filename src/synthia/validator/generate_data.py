@@ -1,8 +1,7 @@
-import json
-from typing import cast, Any
+from typing import cast
 
-from .meta_prompt import explanation_prompt
 from ..miner.BaseLLM import BaseLLM
+from .meta_prompt import explanation_prompt
 
 
 class InputGenerator:

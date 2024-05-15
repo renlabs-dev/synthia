@@ -1,5 +1,6 @@
-from communex.module.module import Module, endpoint  # type: ignore
 from abc import ABC, abstractmethod
+
+from communex.module.module import Module, endpoint  # type: ignore
 from fastapi import HTTPException
 
 

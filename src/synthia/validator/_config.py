@@ -1,4 +1,4 @@
-from communex.compat.types import Ss58Address  #  type: ignore
+from communex.compat.types import Ss58Address  # type: ignore
 from pydantic_settings import BaseSettings
 
 

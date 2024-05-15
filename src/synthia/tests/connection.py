@@ -1,6 +1,7 @@
+import asyncio
+
 from communex.compat.key import classic_load_key  # type: ignore
 from communex.module.client import ModuleClient  # type: ignore
-import asyncio
 
 if __name__ == "__main__":
     from communex.compat.key import classic_load_key  # type: ignore

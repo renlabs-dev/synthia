@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 
+
 class AnthropicSettings(BaseSettings):
     api_key: str
     model: str = "claude-3-opus-20240229"

@@ -1,7 +1,6 @@
 from communex.client import CommuneClient  # type: ignore
 from communex.compat.key import classic_load_key  # type: ignore
 
-
 client = CommuneClient("wss://testnet-commune-api-node-0.communeai.net")
 
 

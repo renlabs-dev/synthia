@@ -1,17 +1,14 @@
-import typer
 from typing import Annotated, Optional
-from rich.console import Console
+
+import typer
 from communex._common import get_node_url
 from communex.client import CommuneClient
 from communex.compat.key import classic_load_key
+from rich.console import Console
 
-from synthia.validator.text_validator import (
-    TextValidator, 
-    ValidatorSettings,
-    get_synthia_netuid,
-    ClaudeProviders,
-    )
-
+from synthia.validator.text_validator import (ClaudeProviders, TextValidator,
+                                              ValidatorSettings,
+                                              get_synthia_netuid)
 
 app = typer.Typer()
 

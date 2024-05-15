@@ -1,18 +1,16 @@
+import json
 from typing import Any
 
+import requests
 from anthropic import Anthropic
-from communex.module.module import Module, endpoint  # type: ignore
 from anthropic._types import NotGiven
 from communex.key import generate_keypair  # type: ignore
+from communex.module.module import Module, endpoint  # type: ignore
 from keylimiter import TokenBucketLimiter
 
-import requests
-import json
-
-
-
-from ._config import AnthropicSettings, OpenrouterSettings  # Import the AnthropicSettings class from config
 from ..utils import log  # Import the log function from utils
+from ._config import (  # Import the AnthropicSettings class from config
+    AnthropicSettings, OpenrouterSettings)
 from .BaseLLM import BaseLLM
 
 
@@ -136,9 +134,8 @@ class OpenrouterModule(BaseLLM):
     
 
 if __name__ == "__main__":
-    from communex.module.server import ModuleServer  # type: ignore
-
     import uvicorn
+    from communex.module.server import ModuleServer  # type: ignore
     key = generate_keypair()
     log(f"Running module with key {key.ss58_address}")
     claude = OpenrouterModule()

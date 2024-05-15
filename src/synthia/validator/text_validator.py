@@ -1,34 +1,36 @@
 import asyncio
+import random
 import re
 import time
-import random
-from enum import Enum
 from dataclasses import dataclass
-
+from enum import Enum
 
 import numpy as np
 import requests
+from communex._common import get_node_url  # type: ignore
 from communex.client import CommuneClient  # type: ignore
+from communex.compat.key import check_ss58_address  # type: ignore
 from communex.module.client import ModuleClient  # type: ignore
 from communex.module.module import Module  # type: ignore
-from communex.compat.key import check_ss58_address  # type: ignore
 from communex.types import Ss58Address  # type: ignore
 from fuzzywuzzy import fuzz  # type: ignore
 from substrateinterface import Keypair  # type: ignore
 
 from ..miner._config import AnthropicSettings, OpenrouterSettings
 from ..miner.anthropic import AnthropicModule, OpenrouterModule
-from ..utils import retry, log
+from ..utils import log, retry
 from ._config import ValidatorSettings
 from .generate_data import InputGenerator
-from .meta_prompt import get_miner_prompt, Criteria
-from .similarity import Embedder, OpenAIEmbedder, OpenAISettings, euclidean_distance
+from .meta_prompt import Criteria, get_miner_prompt
 from .sigmoid import threshold_sigmoid_reward_distribution
+from .similarity import (Embedder, OpenAIEmbedder, OpenAISettings,
+                         euclidean_distance)
 
 # TODO: make it match ipv6
 IP_REGEX = re.compile(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d+")
-NUM_QUESTIONS_PER_CYCLE=5
-MINIMUM_DATASET_SCORE=0.7
+NUM_QUESTIONS_PER_CYCLE = 5
+MINIMUM_DATASET_SCORE = 0.7
+
 
 def set_weights(
     score_dict: dict[int, float], netuid: int, client: CommuneClient, key: Keypair
@@ -87,14 +89,15 @@ def cut_to_max_allowed_weights(
         settings = ValidatorSettings()  # type: ignore
 
     max_allowed_weights = settings.max_allowed_weights
-    
-    # sort the score by highest to lowest
+
+    # sort the score by highest to lowest
     sorted_scores = sorted(score_dict.items(), key=lambda x: x[1], reverse=True)
 
-    # cut to max_allowed_weights
+    # cut to max_allowed_weights
     cut_scores = sorted_scores[:max_allowed_weights]
 
     return dict(cut_scores)
+
 
 def extract_address(string: str):
     """
@@ -129,9 +132,11 @@ def get_ip_port(modules_adresses: dict[int, str]):
     }
     return ip_port
 
+
 class ClaudeProviders(Enum):
-    ANTHROPIC  = "anthropic"
+    ANTHROPIC = "anthropic"
     OPENROUTER = "openrouter"
+
 
 @dataclass
 class ValidationDataset:
@@ -142,11 +147,13 @@ class ValidationDataset:
     chosen_subject: str
     embedded_val_answer: list[float]
 
+
 @dataclass
 class ModuleInfo:
     uid: int
-    address: list[str] #actually a tuple[str, str] but as a list
+    address: list[str]  # actually a tuple[str, str] but as a list
     key: Ss58Address
+
 
 class TextValidator(Module):
     """A class for validating text data using a Synthia network.
@@ -213,7 +220,7 @@ class TextValidator(Module):
         return module_addreses
 
     def _get_validation_dataset(self, settings: ValidatorSettings, size: int):
-        
+
         # TODO: make ValidatorSettings and the miners settings inherit from a
         # common protocol
         match self.provider:
@@ -229,7 +236,7 @@ class TextValidator(Module):
                 claude_settings.max_tokens = settings.max_tokens
                 claude_settings.model = self.val_model
                 claude = OpenrouterModule(claude_settings)
-        
+
         ig = InputGenerator(claude)
 
         retrier = retry(4, [Exception])
@@ -242,9 +249,12 @@ class TextValidator(Module):
             subject, val_answer = self._split_val_subject(explanations)
             embedded_val_answer = self.embedder.get_embedding(val_answer)
             val_dataset = ValidationDataset(
-                prompt=prompt, criteria=criteria, question_age=questions_age,
-                val_answer=val_answer, chosen_subject=subject,
-                embedded_val_answer=embedded_val_answer
+                prompt=prompt,
+                criteria=criteria,
+                question_age=questions_age,
+                val_answer=val_answer,
+                chosen_subject=subject,
+                embedded_val_answer=embedded_val_answer,
             )
             validation_list.append(val_dataset)
         return validation_list
@@ -258,17 +268,14 @@ class TextValidator(Module):
         module_ip, module_port = connection
 
         question = get_miner_prompt(
-            val_info.criteria, 
-            val_info.chosen_subject, 
-            len(val_info.val_answer)
+            val_info.criteria, val_info.chosen_subject, len(val_info.val_answer)
         )
         client = ModuleClient(module_ip, int(module_port), self.key)
         try:
             miner_answer = await client.call(
-                    "generate", miner_key, 
-                    {"prompt": question}, timeout=self.call_timeout
-                )
-            
+                "generate", miner_key, {"prompt": question}, timeout=self.call_timeout
+            )
+
             miner_answer = miner_answer["answer"]
 
         except Exception as e:
@@ -341,13 +348,12 @@ class TextValidator(Module):
             syntia_netuid: The netuid of the Synthia subnet.
         """
 
+        self.client = CommuneClient(get_node_url())
         modules_adresses = self.get_modules(self.client, syntia_netuid)
         modules_keys = self.client.query_map_key(syntia_netuid)
         val_ss58 = self.key.ss58_address
         if val_ss58 not in modules_keys.values():
-            raise RuntimeError(
-                f"validator key {val_ss58} is not registered in subnet"
-                )
+            raise RuntimeError(f"validator key {val_ss58} is not registered in subnet")
         modules_info: dict[int, ModuleInfo] = {}
 
         modules_filtered_address = get_ip_port(modules_adresses)
@@ -364,16 +370,13 @@ class TextValidator(Module):
         hf_data_list: list[dict[str, str]] = []
         # == Validation loop / Scoring ==
         val_dataset = self._get_validation_dataset(settings, NUM_QUESTIONS_PER_CYCLE)
-        
-        
+
         log(f"Selected the following miners: {modules_info.keys()}")
         futures: list[asyncio.Task[tuple[str | None, ValidationDataset]]] = []
         for mod_info in modules_info.values():
             val_info = random.choice(val_dataset)
             future = asyncio.create_task(
-                self._get_miner_prediction(
-                    val_info, (mod_info.address, mod_info.key)
-                )
+                self._get_miner_prediction(val_info, (mod_info.address, mod_info.key))
             )
             futures.append(future)
         miner_answers = await asyncio.gather(*futures)
@@ -455,4 +458,3 @@ class TextValidator(Module):
                 sleep_time = settings.iteration_interval - elapsed
                 log(f"Sleeping for {sleep_time}")
                 time.sleep(sleep_time)
-

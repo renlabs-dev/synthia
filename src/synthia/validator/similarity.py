@@ -1,11 +1,10 @@
-from typing import Protocol
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Protocol
 
-from pydantic_settings import BaseSettings
-import openai
 import numpy
-from transformers import pipeline, Pipeline  # type: ignore
+import openai
+from pydantic_settings import BaseSettings
+from transformers import Pipeline, pipeline  # type: ignore
 
 # from ..utils import log
 
