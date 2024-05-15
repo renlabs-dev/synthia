@@ -25,7 +25,7 @@ class InputGenerator:
             "yourself clear and concisely, crystallizing thoughts and "
             "key concepts. You only respond with the explanations themselves, "
             "eliminating redundant conversational additions. "
-            f"Try to keep your answer below {self.llm.max_tokens} tokens"
+            f"Keep your answer below {int(self.llm.max_tokens * 0.75)} tokens"
         )
 
         user_prompt, criteria = explanation_prompt()

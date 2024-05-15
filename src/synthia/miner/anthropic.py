@@ -33,7 +33,7 @@ class AnthropicModule(BaseLLM):
             "yourself clear and concisely, crystallizing thoughts and "
             "key concepts. You only respond with the explanations themselves, "
             "eliminating redundant conversational additions. "
-            f"Try to keep your answer below {self.settings.max_tokens} tokens"
+            f"Keep your answer below {int(self.settings.max_tokens * 0.75)} tokens"
         )
 
     def prompt(self, user_prompt: str, system_prompt: str | None | NotGiven = None):
@@ -140,9 +140,9 @@ if __name__ == "__main__":
     log(f"Running module with key {key.ss58_address}")
     claude = OpenrouterModule()
     refill_rate = 1/400
-    bucket = TokenBucketLimiter(2, refill_rate)
+    bucket = TokenBucketLimiter(15, refill_rate)
     server = ModuleServer(
-        claude, key, ip_limiter=bucket, subnets_whitelist=[3]
+        claude, key, ip_limiter=bucket, subnets_whitelist=None
         )
     app = server.get_fastapi_app()
     uvicorn.run(app, host="127.0.0.1", port=8000)

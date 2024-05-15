@@ -34,7 +34,7 @@ class BaseLLM(ABC, Module):
             "yourself clear and concisely, crystallizing thoughts and "
             "key concepts. You only respond with the explanations themselves, "
             "eliminating redundant conversational additions. "
-            f"Try to keep your answer below {max_tokens} tokens"
+            f"Keep your answer below {int(max_tokens * 0.75)} tokens"
         )
         return prompt
     
