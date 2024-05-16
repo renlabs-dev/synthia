@@ -18,6 +18,9 @@ Welcome to the Synthia subnet, a bleeding-edge initiative to accelerate the open
   - [Running A Miner](#running-a-miner)
     - [Note](#note)
   - [Running A Validator](#running-a-validator)
+  - [Hardware Requirements](#hardware-requirements)
+    - [Minimum Requirements](#minimum-requirements)
+    - [Recommended Requirements](#recommended-requirements)
   - [Launcher Script](#launcher-script)
     - [Using the launcher](#using-the-launcher)
     - [What it does](#what-it-does)
@@ -61,13 +64,14 @@ pip install communex --upgrade
 - Run `docker run -v ~/.commune:/root/.commune -it [-p <port>:<port>] ghcr.io/agicommies/synthia:9d23f1f`
 - Run `poetry shell` to enter the enviroment
   
-  ##### Operating with docker
-  - You can quit docker with ctrl+d
-  - You can dettach from your session with ctrl+p followed by ctrl+q
-  - You can attach back to your session by running `docker attach <id>`
-  - You can list the ids of your containers with `docker ps`
-  - Note that you should pass the ports you're going to use to the container (with `-p <port>:<port>`) to bind them to your host machine.
-  - You can pass enviroments variables to docker with `-e <VARIABLE>=<value>`.
+##### Operating with docker
+
+- You can quit docker with ctrl+d
+- You can dettach from your session with ctrl+p followed by ctrl+q
+- You can attach back to your session by running `docker attach <id>`
+- You can list the ids of your containers with `docker ps`
+- Note that you should pass the ports you're going to use to the container (with `-p <port>:<port>`) to bind them to your host machine.
+- You can pass enviroments variables to docker with `-e <VARIABLE>=<value>`.
     e.g `docker run -e ANTHROPIC_API_KEY=<your-anthropic-api-key> -v ~/.commune:/root/.commune -it ghcr.io/agicommies/synthia:9d23f1f`
 
 #### Manually, on Ubuntu 22.04
@@ -210,6 +214,26 @@ pip install communex --upgrade
    You can pass --provider openrouter to run using openrouter provider
 
    Note: you need to keep this process alive, running in the background. Some options are [tmux](https://www.tmux.org/](https://ioflood.com/blog/install-tmux-command-linux/)), [pm2](https://pm2.io/docs/plus/quick-start/) or [nohup](https://en.wikipedia.org/wiki/Nohup).
+
+## Hardware Requirements
+
+### Minimum Requirements
+
+- **CPU:** Quad-core Intel i3 or equivalent AMD processor, 2.5 GHz
+- **RAM:** 2 GB
+- **Storage:** 500mb + of free space
+- **GPU:** Not needed
+- **Network:** Broadband internet connection for online data syncing
+
+### Recommended Requirements
+
+If you want to run up to ~10+ miners / validators
+
+- **CPU:** 4-core Intel i5 or equivalent AMD processor, 2.5 GHz-3.5 GHz
+- **RAM:** 4 GB or more
+- **Storage:** 128 GB SSD
+- **GPU:** Not needed
+- **Network:** Gigabit Ethernet or better
 
 ## Launcher Script
 
