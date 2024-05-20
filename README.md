@@ -126,13 +126,13 @@ pip install communex --upgrade
    Proceed with running the miner:
 
    ```sh
-   python3 synthia.miner.cli <your_commune_key> --ip 0.0.0.0 [--port]
+   python3 -m synthia.miner.cli <your_commune_key> --ip 0.0.0.0 [--port]
    ```
 
     Alternatively, if you want to run a openrouter miner:
 
    ```sh
-   python3 synthia.miner.cli <your_commune_key> --ip 0.0.0.0 [--port] --provider openrouter
+   python3 -m synthia.miner.cli <your_commune_key> --ip 0.0.0.0 [--port] --provider openrouter
    ```
   
    The **ip** is passed as **0.0.0.0** to accept **outside connections**, since the default,
