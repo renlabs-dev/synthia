@@ -4,11 +4,7 @@ from typing import Any
 import requests
 from anthropic import Anthropic
 from anthropic._types import NotGiven
-from communex.key import generate_keypair  # type: ignore
-from communex.module.module import Module, endpoint  # type: ignore
-from keylimiter import TokenBucketLimiter
 
-from ..utils import log  # Import the log function from utils
 from ._config import (  # Import the AnthropicSettings class from config
     AnthropicSettings, OpenrouterSettings)
 from .BaseLLM import BaseLLM
@@ -131,18 +127,3 @@ class OpenrouterModule(BaseLLM):
         if finish_reason != "end_turn":
             return None, f"Could not get a complete answer: {finish_reason}"
         return answer["message"]["content"], ""
-    
-
-if __name__ == "__main__":
-    import uvicorn
-    from communex.module.server import ModuleServer  # type: ignore
-    key = generate_keypair()
-    log(f"Running module with key {key.ss58_address}")
-    claude = OpenrouterModule()
-    refill_rate = 1/400
-    bucket = TokenBucketLimiter(15, refill_rate)
-    server = ModuleServer(
-        claude, key, ip_limiter=bucket, subnets_whitelist=None
-        )
-    app = server.get_fastapi_app()
-    uvicorn.run(app, host="127.0.0.1", port=8000)
