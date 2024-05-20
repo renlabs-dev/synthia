@@ -4,7 +4,6 @@ import typer
 from communex._common import get_node_url
 from communex.client import CommuneClient
 from communex.compat.key import classic_load_key
-from rich.console import Console
 
 from synthia.validator.text_validator import (ClaudeProviders, TextValidator,
                                               ValidatorSettings,
