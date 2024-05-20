@@ -379,7 +379,12 @@ class TextValidator(Module):
                 self._get_miner_prediction(val_info, (mod_info.address, mod_info.key))
             )
             futures.append(future)
-        miner_answers = await asyncio.gather(*futures)
+        miner_answers = await asyncio.gather(*futures, return_exceptions=True)
+        miner_answers = [
+            answer for answer in miner_answers if (
+                not isinstance(answer, BaseException)
+                )
+            ]
 
         for uid, miner_response in zip(modules_info.keys(), miner_answers):
             miner_answer, val_info = miner_response
