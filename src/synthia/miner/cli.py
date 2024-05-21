@@ -21,7 +21,7 @@ app = typer.Typer()
 
 def stake_to_ratio(stake: int, multiplier: int = 1) -> float:
     max_ratio = 4
-    base_ratio = 13
+    base_ratio = 2
     if multiplier <= 1/max_ratio:
         raise ValueError(
             f"Given multiplier {multiplier} would set 0 tokens for all stakes"
@@ -73,7 +73,11 @@ def serve(
         case ClaudeProviders.OPENROUTER:
             module = OpenrouterModule()
 
-    stake_limiter = StakeLimiterParams(get_refill_rate=stake_to_ratio)
+    stake_limiter = StakeLimiterParams(
+        epoch=800, 
+        cache_age=600,
+        get_refill_per_epoch=stake_to_ratio,
+    )
     server = ModuleServer(
         module, keypair, subnets_whitelist=[3], limiter = stake_limiter
     )
