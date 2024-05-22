@@ -29,7 +29,7 @@ def serve(
             help="Name of the key present in `~/.commune/key`"
             )
         ],
-    call_timeout: int = 65,
+    call_timeout: int = 113,
     provider: Optional[str] = typer.Option(
         default="anthropic", callback=provider_callback
     ),
