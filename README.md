@@ -98,6 +98,24 @@ pip install communex --upgrade
 
 ## Running A Miner
 
+### Note
+
+- Make sure to **serve and register** the module using the **same key**.
+- If you are not sure about your `public ip` address:
+
+   ```sh
+   curl -4 https://ipinfo.io/ip
+   ```
+
+- Current `<synthia netuid>` is 3. If you want to check for yourself, you can run:
+
+   ```sh
+   comx subnet list
+   ```
+
+   And look for the name `synthia`
+
+
 1. Get an API key from [Anthropic](https://console.anthropic.com/).
 
 2. Create a file named `config.env` in the `env/` folder with the following
@@ -114,7 +132,7 @@ pip install communex --upgrade
    Alternatively, you can set up those values as enviroment variables.
    Note that you just need to provide the key to the provider that you're going
    to use
-
+  
 3. Serve the miner:
 
    Make sure to be located in the root of synthia repository
@@ -140,7 +158,7 @@ pip install communex --upgrade
    If you don't have a wallet, generate one by running
 
    ```sh
-   comx key create <name>
+   comx key create <your_commune_key>
    ```
 
    **Note**: you need to keep this process alive, running in the background. Some
@@ -149,7 +167,7 @@ pip install communex --upgrade
    Example using pm2
 
    ```sh
-   pm2 start "comx module serve synthia.miner.anthropic.AnthropicModule <key> --subnets-whitelist <synthia netuid> --ip 0.0.0.0" --name <name>
+   pm2 start "comx module serve synthia.miner.anthropic.AnthropicModule <your_commune_key> --subnets-whitelist <synthia netuid> --ip 0.0.0.0 --port <port>" --name <pm2_name>
    ```
 
 4. Finally register the module on the Synthia subnet:
@@ -157,23 +175,6 @@ pip install communex --upgrade
     ```sh
     comx module register <name> <your_commune_key> --ip <your-ip-address> --port <port> --netuid <synthia netuid>  
     ```
-
-### Note
-
-- Make sure to **serve and register** the module using the **same key**.
-- If you are not sure about your `public ip` address:
-
-   ```sh
-   curl -4 https://ipinfo.io/ip
-   ```
-
-- Current `<synthia netuid>` is 3. If you want to check for yourself, you can run:
-
-   ```sh
-   comx subnet list
-   ```
-
-   And look for the name `synthia`
 
 ## Running A Validator
 
