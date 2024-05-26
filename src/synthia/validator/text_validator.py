@@ -15,6 +15,7 @@ from communex.module.module import Module  # type: ignore
 from communex.types import Ss58Address  # type: ignore
 from fuzzywuzzy import fuzz  # type: ignore
 from substrateinterface import Keypair  # type: ignore
+from time import sleep
 
 from ..miner._config import AnthropicSettings, OpenrouterSettings
 from ..miner.anthropic import AnthropicModule, OpenrouterModule
@@ -68,8 +69,15 @@ def set_weights(
     uids = list(weighted_scores.keys())
     weights = list(weighted_scores.values())
     log(f"Settings weights for the following uids: {uids}")
-    client.vote(key=key, uids=uids, weights=weights, netuid=netuid)
-
+    try:
+        client.vote(key=key, uids=uids, weights=weights, netuid=netuid)
+    except Exception as e:
+        log(f"WARNING: Failed to set weights with exception: {e}. Will retry.")
+        sleep_time = random.uniform(1, 2)
+        sleep(sleep_time)
+        # retry with a different node
+        client = CommuneClient(get_node_url())
+        client.vote(key=key, uids=uids, weights=weights, netuid=netuid)
 
 def cut_to_max_allowed_weights(
     score_dict: dict[int, float], settings: ValidatorSettings | None = None
