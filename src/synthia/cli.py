@@ -29,7 +29,7 @@ def serve(
             help="Name of the key present in `~/.commune/key`"
             )
         ],
-    call_timeout: int = 113,
+    call_timeout: int = 150,
     provider: Optional[str] = typer.Option(
         default="anthropic", callback=provider_callback
     ),
@@ -37,8 +37,7 @@ def serve(
     ):
     provider_enumerated = ClaudeProviders(provider)
     keypair = classic_load_key(commune_key) # type: ignore
-    settings = ValidatorSettings(
-    ) #type: ignore
+    settings = ValidatorSettings() #type: ignore
     c_client = CommuneClient(get_node_url())
     synthia_uid = get_synthia_netuid(c_client)
     validator = TextValidator(
