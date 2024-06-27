@@ -212,7 +212,6 @@ class TextValidator(Module):
         if not embedder:
             embedder = OpenAIEmbedder(OpenAISettings())  # type: ignore
         self.embedder = embedder
-        self.val_model = "anthropic/claude-3.5-sonnet"
         self.upload_client = ModuleClient("5.161.229.89", 80, self.key)
         self.call_timeout = call_timeout
         self.provider = provider
@@ -239,13 +238,13 @@ class TextValidator(Module):
                 claude_settings = AnthropicSettings()  # type: ignore
                 claude_settings.temperature = settings.temperature
                 claude_settings.max_tokens = settings.max_tokens
-                claude_settings.model = self.val_model
+                claude_settings.model = settings.model
                 claude = AnthropicModule(claude_settings)
             case ClaudeProviders.OPENROUTER:
                 claude_settings = OpenrouterSettings()  # type: ignore
                 claude_settings.temperature = settings.temperature
                 claude_settings.max_tokens = settings.max_tokens
-                claude_settings.model = self.val_model
+                claude_settings.model = settings.model
                 claude = OpenrouterModule(claude_settings)
 
         ig = InputGenerator(claude)
