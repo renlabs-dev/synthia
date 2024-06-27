@@ -8,6 +8,7 @@ from anthropic._types import NotGiven
 from ._config import (  # Import the AnthropicSettings class from config
     AnthropicSettings, OpenrouterSettings)
 from .BaseLLM import BaseLLM
+from synthia.utils import log
 
 
 class AnthropicModule(BaseLLM):
@@ -78,6 +79,7 @@ class OpenrouterModule(BaseLLM):
         "claude-3-opus-20240229": "anthropic/claude-3-opus",
         "anthropic/claude-3-opus": "anthropic/claude-3-opus",
         "anthropic/claude-3.5-sonnet": "anthropic/claude-3.5-sonnet",
+        "claude-3-5-sonnet-20240620": "anthropic/claude-3.5-sonnet",
     }
 
     def __init__(self, settings: OpenrouterSettings | None = None) -> None:
@@ -122,6 +124,11 @@ class OpenrouterModule(BaseLLM):
         )
 
         json_response: dict[Any, Any] = response.json()
+        error = json_response.get("error")
+        if error is not None and error.get("code") == 402:
+            message = "Insufficient credits"
+            log(message)
+            return None, message
         answer = json_response["choices"][0]
         finish_reason = answer['finish_reason']
         if finish_reason != "end_turn":
