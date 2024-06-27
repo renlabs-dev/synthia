@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings
 class ValidatorSettings(BaseSettings):
     api_key: str  # anthropic api key
     # == Text generation ==
-    model: str = "anthropic/claude-3.5-sonnet"
+    model: str = "claude-3-5-sonnet-20240620"
     temperature: float = 0.2
     max_tokens: int = 1000
 
