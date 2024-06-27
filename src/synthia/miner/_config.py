@@ -15,7 +15,7 @@ class AnthropicSettings(BaseSettings):
 
 class OpenrouterSettings(BaseSettings):
     api_key: str
-    model: str = "anthropic/claude-3-opus"
+    model: str = "anthropic/claude-3.5-sonnet"
     max_tokens: int = 3000
     temperature: float = 0.5
 

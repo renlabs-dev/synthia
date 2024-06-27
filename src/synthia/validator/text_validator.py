@@ -79,6 +79,7 @@ def set_weights(
         client = CommuneClient(get_node_url())
         client.vote(key=key, uids=uids, weights=weights, netuid=netuid)
 
+
 def cut_to_max_allowed_weights(
     score_dict: dict[int, float], settings: ValidatorSettings | None = None
 ) -> dict[int, float]:
@@ -211,7 +212,7 @@ class TextValidator(Module):
         if not embedder:
             embedder = OpenAIEmbedder(OpenAISettings())  # type: ignore
         self.embedder = embedder
-        self.val_model = "claude-3-opus-20240229"
+        self.val_model = "anthropic/claude-3.5-sonnet"
         self.upload_client = ModuleClient("5.161.229.89", 80, self.key)
         self.call_timeout = call_timeout
         self.provider = provider
@@ -403,8 +404,8 @@ class TextValidator(Module):
         miner_answers = [
             answer for answer in miner_answers if (
                 not isinstance(answer, BaseException)
-                )
-            ]
+            )
+        ]
 
         for uid, miner_response in zip(modules_info.keys(), miner_answers):
             miner_answer, val_info = miner_response

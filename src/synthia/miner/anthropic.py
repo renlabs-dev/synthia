@@ -55,9 +55,9 @@ class AnthropicModule(BaseLLM):
             or message_dict["stop_reason"] != "end_turn"
         ):
             return (
-                None, 
+                None,
                 f"Could not generate an answer. Stop reason {message_dict['stop_reason']}"
-                )
+            )
 
         blocks = message_dict["content"]
         answer = "".join([block["text"] for block in blocks])
@@ -73,37 +73,37 @@ class AnthropicModule(BaseLLM):
 
 
 class OpenrouterModule(BaseLLM):
-    
+
     module_map: dict[str, str] = {
         "claude-3-opus-20240229": "anthropic/claude-3-opus",
         "anthropic/claude-3-opus": "anthropic/claude-3-opus",
+        "anthropic/claude-3.5-sonnet": "anthropic/claude-3.5-sonnet",
     }
 
     def __init__(self, settings: OpenrouterSettings | None = None) -> None:
         super().__init__()
-        self.settings = settings or OpenrouterSettings() # type: ignore
+        self.settings = settings or OpenrouterSettings()  # type: ignore
         self._max_tokens = self.settings.max_tokens
         if self.settings.model not in self.module_map:
             raise ValueError(
                 f"Model {self.settings.model} not supported on Openrouter"
-                )
-
+            )
 
     @property
     def max_tokens(self) -> int:
         return self._max_tokens
-    
+
     @property
     def model(self) -> str:
         model_name = self.module_name_mapping(self.settings.model)
         return model_name
-    
-    def module_name_mapping(self, model_name: str) -> str:        
+
+    def module_name_mapping(self, model_name: str) -> str:
         return self.module_map[model_name]
-    
 
     def prompt(self, user_prompt: str, system_prompt: str | None = None):
-        context_prompt = system_prompt or self.get_context_prompt(self.max_tokens)
+        context_prompt = system_prompt or self.get_context_prompt(
+            self.max_tokens)
         model = self.model
         prompt = {
             "model": model,
@@ -114,11 +114,11 @@ class OpenrouterModule(BaseLLM):
         }
         key = self.settings.api_key
         response = requests.post(
-        url="https://openrouter.ai/api/v1/chat/completions",
-        headers={
-        "Authorization": f"Bearer {key}",
-        },
-        data=json.dumps(prompt)
+            url="https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {key}",
+            },
+            data=json.dumps(prompt)
         )
 
         json_response: dict[Any, Any] = response.json()
