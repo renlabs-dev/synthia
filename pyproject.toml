@@ -13,8 +13,8 @@ typer = "^0.9.0"
 python-dotenv = "^1.0.1"
 pydantic-settings = "^2.2.1"
 
-communex= "^0.1.28"
-
+#communex= "^0.1.28"
+communex = { git = "https://github.com/agicommies/communex.git", rev = "global-stake" }
 keylimiter = "^0.1.5"
 slowapi = "^0.1.9"
 python-multipart = "^0.0.5"
