@@ -313,10 +313,20 @@ class TextValidator(Module):
 
     def _score_miner(
         self, miner_answer: str | None, embbeded_val_answer: list[float]
-    ) -> float:
+    ) -> float | None:
         if not miner_answer:
             return 0
-        embedded_miner_answer = self.embedder.get_embedding(miner_answer)
+        if isinstance(miner_answer, list):
+            # index 0 is sure to exist because of the if not miner_answer if
+            # huge gambiarra because of openrouter API giving weird responses
+            miner_answer = miner_answer[0]
+        try:
+            embedded_miner_answer = self.embedder.get_embedding(miner_answer)
+        except Exception as e:
+            log(f"WARN: Failed to embed miner answer: %20{miner_answer}%20")
+            print(e)
+            return None
+
         normalized_distance = self._get_unit_euclid_distance(
             embedded_miner_answer, embbeded_val_answer
         )
@@ -412,7 +422,10 @@ class TextValidator(Module):
                 log(f"Skipping miner {uid} that didn't answer")
                 continue
             score = self._score_miner(
-                miner_answer, val_info.embedded_val_answer)
+                miner_answer, val_info.embedded_val_answer
+            )
+            if score is None:
+                continue
             for answer in response_cache:
                 similarity = fuzz.ratio(answer, miner_answer)  # type: ignore
             response_cache.append(miner_answer)
