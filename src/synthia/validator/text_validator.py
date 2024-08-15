@@ -274,7 +274,7 @@ class TextValidator(Module):
         val_info: ValidationDataset,
         miner_info: tuple[list[str], Ss58Address],
     ) -> tuple[str | None, ValidationDataset]:
-        miner_answer = None
+        miner_answer: str | None | list[str] = None
 
         try:
             connection, miner_key = miner_info
@@ -291,7 +291,13 @@ class TextValidator(Module):
                     "generate", miner_key, {"prompt": question}, timeout=self.call_timeout
                 )
                 miner_answer = response.get("answer")
+                if isinstance(miner_answer, list):
+                    if len(miner_answer) == 0:
+                        miner_answer = None
+                    else:
+                        miner_answer = miner_answer[0]
             except Exception as e:
+                miner_answer = None
                 log(f"Miner {module_ip}:{module_port} failed to generate an answer: {e}")
 
         # This is needed, so truly nothing can get propagated through the call stack
