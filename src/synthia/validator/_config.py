@@ -1,4 +1,3 @@
-from communex.compat.types import Ss58Address  # type: ignore
 from pydantic_settings import BaseSettings
 
 
@@ -11,8 +10,8 @@ class ValidatorSettings(BaseSettings):
 
     # == Scoring ==
     # sleep time between each iteration
-    # (we are aiming at 50 block subnet tempo, with 8 second block time)
-    iteration_interval: int = 1920
+    # blocks * block_time
+    iteration_interval: int = 360 * 8
     #  this is a global parameter of the maximum weights that a validator can set
     max_allowed_weights: int = 420
     hf_uploader_ss58: str = "5EX6ixabe8fiWHySw4SYaJAkaHLKeqSJ3rv7so2FrLC2cfGV"
